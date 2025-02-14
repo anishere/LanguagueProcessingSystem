@@ -42,6 +42,10 @@ textarea {
   box-shadow: none !important;
 }
 
+.voiceDetected {
+  position: absolute;
+}
+
 .output-text {
   border-radius: 20px;
 }
@@ -99,6 +103,7 @@ textarea {
   align-items: center;
   color: white;
   font-size: 18px;
+  z-index: 1;
 }
 
 .spinner {
