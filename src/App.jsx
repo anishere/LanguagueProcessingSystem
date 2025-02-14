@@ -9,6 +9,7 @@ import OutputText from "./components/OutputText";
 import LoadingOverlay from "./components/LoadingOverlay";
 import TranslateButton from "./components/TranslateButton";
 import useClear from "./hooks/useClear";
+import { Bounce, ToastContainer } from "react-toastify";
 
 function App() {
   const {
@@ -20,7 +21,7 @@ function App() {
     setTargetLang,
     isLoading,
     handleTranslate,
-  } = useTranslate(); // ✅ Sử dụng custom hook
+  } = useTranslate(); // Sử dụng custom hook
 
   const {isRecording, detectVoice, startRecording, stopRecording, isLoading: isLoadingRecord, setDetectVoice} = useSpeechToText(setInputText); // ✅ Sử dụng custom hook
 
@@ -49,6 +50,19 @@ function App() {
         </div>
       </div>
       <TranslateButton handleTranslate={handleTranslate} isLoading={isLoading} />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+        />
     </div>
   );
 }

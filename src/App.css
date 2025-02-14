@@ -64,6 +64,33 @@ textarea {
   left: 22px;
 }
 
+.icon-microphone svg {
+  width: 30px;
+}
+
+.icon-microphone:hover {
+  width: 30px;
+  border-radius: 100%;
+  background-color: rgb(169 175 182);
+}
+
+.icon-speakerIn {
+  right: 28px;
+  bottom: 6px;
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.icon-speakerIn svg {
+  width: 30px;
+}
+
+.icon-speakerIn:hover {
+  width: 30px;
+  border-radius: 100%;
+  background-color: rgb(169 175 182);
+}
+
 /* animation microphone */
 .icon-microphone {
   cursor: pointer;
@@ -88,6 +115,42 @@ textarea {
 }
 
 /* animation microphone end */
+
+/* animation speaker input */
+.icon-speakerIn {
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.icon-speakerIn.speaking {
+  animation: speaker-bounce 1s infinite;
+  color: #ff4500; /* Đổi màu khi phát */
+}
+
+@keyframes speaker-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.playing-text {
+  position: absolute;
+  top: -22px;
+  left: 10px;
+  font-size: 12px;
+  background: rgba(255, 69, 0, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+
+/* animation speaker output */
 
 /* loading handle voice */
 .loading-overlay {

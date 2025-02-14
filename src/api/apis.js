@@ -46,3 +46,33 @@ export const speechToText = async (audioBlob) => {
     throw error;
   }
 };
+
+export const textToSpeech = async (text, lang) => {
+  try {
+    const response = await axiosInstance.post(
+      "/textToSpeechAI/textToSpeech",
+      { text, lang },
+      { headers: { "API-Key": APIKey } }
+    );
+
+    return response.audio_base64; // Trả về chuỗi Base64 của file âm thanh
+  } catch (error) {
+    console.error("Error during text-to-speech:", error);
+    throw error;
+  }
+};
+
+export const analyzeLanguage = async (text) => {
+  try {
+    const response = await axiosInstance.post(
+      "/analyzeAI/analyze",
+      { text },
+      { headers: { "API-Key": APIKey } }
+    );
+
+    return response.language; // ✅ Trả về danh sách ngôn ngữ nhận diện được
+  } catch (error) {
+    console.error("Error during language analysis:", error);
+    throw error;
+  }
+};
