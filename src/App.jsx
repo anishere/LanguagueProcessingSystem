@@ -46,7 +46,7 @@ function App() {
         />
         <div className="col-md-6">
           <LanguageSelector targetLang={targetLang} setTargetLang={setTargetLang} />
-          <OutputText outputText={outputText} isLoading={isLoading} outputRef={outputRef} />
+          <OutputText targetLang={targetLang} outputText={outputText} isLoading={isLoading} outputRef={outputRef} />
         </div>
       </div>
       <TranslateButton handleTranslate={handleTranslate} isLoading={isLoading} />

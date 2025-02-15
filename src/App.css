@@ -48,6 +48,11 @@ textarea {
 
 .output-text {
   border-radius: 20px;
+  overflow: hidden;
+}
+
+.output-text::-webkit-scrollbar {
+  display: none; /* Ẩn thanh cuộn trên Chrome, Safari */
 }
 
 .icon-delete {
@@ -86,6 +91,23 @@ textarea {
 }
 
 .icon-speakerIn:hover {
+  width: 30px;
+  border-radius: 100%;
+  background-color: rgb(169 175 182);
+}
+
+.icon-speakerOut {
+  right: 14px;
+  bottom: 2px;
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.icon-speakerOut svg {
+  width: 30px;
+}
+
+.icon-speakerOut:hover {
   width: 30px;
   border-radius: 100%;
   background-color: rgb(169 175 182);
@@ -150,7 +172,33 @@ textarea {
   border-radius: 5px;
 }
 
-/* animation speaker output */
+/* animation speaker input end */
+
+/* animation speaker output start */
+
+.icon-speakerOut {
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.icon-speakerOut.speaking {
+  animation: speaker-bounce 1s infinite;
+  color: #ff4500; /* Đổi màu khi phát */
+}
+
+@keyframes speaker-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* animation speaker output end */
 
 /* loading handle voice */
 .loading-overlay {

@@ -11,7 +11,7 @@ const LanguageSelector = ({ targetLang, setTargetLang }) => {
       onChange={(e) => setTargetLang(e.target.value)}
     >
       {languages.map((lang) => (
-        <option key={lang.name} value={lang.name}>
+        <option key={lang.name} value={lang.code}>
           {lang.name}
         </option>
       ))}

@@ -3,6 +3,7 @@ import axiosInstance from "../settings/axios";
 const APIKey = import.meta.env.VITE_API_CODE;
 
 export const translateText = async (text, targetLang) => {
+  console.log("text: ", text, "targetLang: ", targetLang);
   try {
     const response = await axiosInstance.post(
       "/translateAI/translate",
