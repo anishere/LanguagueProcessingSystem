@@ -48,7 +48,7 @@ export const speechToText = async (audioBlob) => {
   }
 };
 
-export const textToSpeech = async (text, lang) => {
+export const textToSpeech = async (text, lang = "vi") => {
   try {
     const response = await axiosInstance.post(
       "/textToSpeechAI/textToSpeech",
