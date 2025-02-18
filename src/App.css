@@ -21,14 +21,16 @@ textarea {
 }
 
 .selectLan {
+  margin-bottom: 12px !important;
   width: 25%;
   display: inline-block;
 }
 
 .wrap-input {
-  border: 1px solid #999999;
+  font-size: 24px;
+  border: 1px solid #dadce0;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 12px;
 }
 
 .wrap-input textarea {
@@ -47,12 +49,17 @@ textarea {
 }
 
 .output-text {
-  border-radius: 20px;
+  border: 1px solid transparent !important;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .output-text::-webkit-scrollbar {
   display: none; /* Ẩn thanh cuộn trên Chrome, Safari */
+}
+
+.output-text p {
+  font-size: 24px;
 }
 
 .icon-delete {
@@ -118,6 +125,25 @@ textarea {
 
 .AnalysisResults {
   border-radius: 10px;
+}
+
+.buttonAction {
+  border: 1px solid #dadce0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a73e8;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.buttonAction:hover {
+  background-color: #e8f0fe;
 }
 
 /* animation */

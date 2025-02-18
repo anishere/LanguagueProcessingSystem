@@ -1,8 +1,10 @@
 import PropTypes from "prop-types";
+import { TbAnalyze } from "react-icons/tb";
 
 const AnalyzeButton = ({ handleAnalyze, isAnalyzing }) => {
   return (
-    <button className="btn btn-secondary mx-2 mt-2" onClick={handleAnalyze}>
+    <button className="buttonAction mx-2 mt-2" onClick={handleAnalyze}>
+      <TbAnalyze />
       {isAnalyzing ? "Đang phân tích..." : "Phân tích"}
     </button>
   );

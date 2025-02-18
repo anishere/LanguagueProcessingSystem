@@ -1,10 +1,12 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 import PropTypes from "prop-types"; 
+import { MdOutlineTranslate } from "react-icons/md";
 
 const TranslateButton = ({ handleTranslate, isLoading }) => {
   return (
-    <button className="btn btn-primary mt-2" onClick={handleTranslate}>
+    <button className="buttonAction mt-2" onClick={handleTranslate}>
+      <MdOutlineTranslate />
       {isLoading ? "Đang dịch..." : "Dịch"}
     </button>
   );

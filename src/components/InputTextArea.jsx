@@ -26,12 +26,12 @@ const InputTextArea = ({
       textareaRef.current.style.height = "auto"; 
       const newHeight = Math.max(textareaRef.current.scrollHeight, 150) + "px";
       textareaRef.current.style.height = newHeight;
-      outputRef.current.style.height = `calc(${newHeight} + 26px)`;
+      outputRef.current.style.height = `calc(${newHeight} + 33px)`;
     }
   }, [inputText, outputRef]);
 
   return (
-    <div className="col-md-6 position-relative">
+    <div className="col-md-6 p-1 position-relative">
       {isAnalyze && <LoadingOverlay />}
       {detectVoice && <span className="mx-2 voiceDetected">Voice Detected: <b>{detectVoice}</b></span>}
       {inputText && <i className="icon-delete position-absolute" onClick={handleClear}><FiDelete /></i>}

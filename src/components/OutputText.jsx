@@ -18,7 +18,7 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
           </div>
         </div>
       ) : (
-        <p>{outputText || "Kết quả dịch sẽ hiển thị tại đây..."}</p>
+        <p>{outputText || "Bản dịch..."}</p>
       )}
       {/* ✅ Xử lý phát/dừng âm thanh khi nhấn vào icon */}
       {outputText && 

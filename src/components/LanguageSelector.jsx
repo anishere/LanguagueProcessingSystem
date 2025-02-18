@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 const LanguageSelector = ({ targetLang = 'vi', setTargetLang, setTargetLangFull = 'vietnamese' }) => {
   return (
     <select
-      className="form-select selectLan mb-md-3 mb-2 mt-2 mt-md-0"
+      className="form-select selectLan mb-md-0 mb-2 mt-2 mt-md-0"
       value={targetLang}
       onChange={(e) => {
         const selectedOption = e.target.options[e.target.selectedIndex]; // ✅ Lấy option được chọn

@@ -1,0 +1,35 @@
+.navbar {
+  display: flex;
+  justify-content: left;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.nav-item {
+  border: 1px solid #dadce0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a73e8;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.nav-item .icon {
+  font-size: 20px;
+}
+
+.nav-item:hover {
+  background-color: #e8f0fe;
+}
+
+.nav-item.active {
+  color: #ffffff;
+  background-color: #1a73e8;
+  border-color: #1a73e8;
+}
