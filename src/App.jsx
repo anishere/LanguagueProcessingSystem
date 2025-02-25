@@ -5,6 +5,7 @@ import ImagePage from "./pages/ImagePage";
 import FilePage from "./pages/FilePage";
 import WebPage from "./pages/WebPage";
 import Navbar from "./components/Navbar";
+import Test from "./pages/Test";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/image" element={<ImagePage />} />
           <Route path="/file" element={<FilePage />} />
           <Route path="/web" element={<WebPage />} />
+          <Route path="/test" element={<Test />} />
         </Routes>
       </div>
     </Router>

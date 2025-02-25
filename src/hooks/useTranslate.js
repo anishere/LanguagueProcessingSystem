@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { translateText } from "../api/apis";
-import useSpeechToText from "./useSpeechToText";
 import { Bounce, toast } from "react-toastify";
 
 const useTranslate = () => {
@@ -9,7 +8,6 @@ const useTranslate = () => {
   const [outputText, setOutputText] = useState("");
   const [targetLang, setTargetLang] = useState("vi");
   const [isLoading, setIsLoading] = useState(false);
-  const [detectedVoice, setDetectedVoice] = useState();
   const [targetLangFull, setTargetLangFull] = useState("vietnamese")
 
   const handleTranslate = async () => {
@@ -25,14 +23,16 @@ const useTranslate = () => {
         theme: "light",
         transition: Bounce,
         });
-      return;
+      return "";
     }
     try {
       setIsLoading(true);
       const result = await translateText(inputText, targetLangFull);
       setOutputText(result);
+      return result;
     } catch (error) {
       alert("Đã xảy ra lỗi khi dịch văn bản!");
+      return "";
     } finally {
       setIsLoading(false);
     }

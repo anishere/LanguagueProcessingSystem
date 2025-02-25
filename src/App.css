@@ -27,7 +27,9 @@ textarea {
 }
 
 .wrap-input {
-  font-size: 24px;
+  font-family: "Roboto", "RobotoDraft", "Helvetica", "Arial", "sans-serif";
+  font-size: 18px;
+  line-height: 28px;
   border: 1px solid #dadce0;
   overflow: hidden;
   border-radius: 12px;
@@ -58,14 +60,20 @@ textarea {
   display: none; /* Ẩn thanh cuộn trên Chrome, Safari */
 }
 
-.output-text p {
+/* .output-text p {
   font-size: 24px;
+} */
+
+.output-text pre {
+  font-family: "Roboto", "RobotoDraft", "Helvetica", "Arial", "sans-serif";
+  font-size: 18px;
+  line-height: 28px;
 }
 
 .icon-delete {
   font-size: 1.35rem;
-  top: 45px;
-  right: 22px;
+  top: 50px;
+  right: 12px;
   cursor: pointer;
 }
 

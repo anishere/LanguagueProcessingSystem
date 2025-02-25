@@ -77,3 +77,27 @@ export const analyzeLanguage = async (text) => {
     throw error;
   }
 };
+
+export const extractText = async (imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", imageFile); // Thêm file ảnh vào FormData
+
+    const response = await axiosInstance.post(
+      "/imgToText/extract",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "API-Key": APIKey, // Thêm API-Key vào header
+        },
+      }
+    );
+
+    // Trả về object chứa extracted_text và positions
+    return response.extracted_text
+  } catch (error) {
+    console.error("Error during text extraction from image:", error);
+    throw error;
+  }
+};
