@@ -94,7 +94,6 @@ export const extractText = async (imageFile) => {
       }
     );
 
-    // Trả về object chứa extracted_text và positions
     return response.extracted_text
   } catch (error) {
     console.error("Error during text extraction from image:", error);

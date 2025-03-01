@@ -8,7 +8,7 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
   return (
     <div
       ref={outputRef} // ✅ Gán ref vào div output để cập nhật chiều cao từ InputTextArea
-      className="border p-3 output-text position-relative"
+      className="border output-text position-relative"
       style={{ minHeight: "100px", overflowY: "auto" }}
     >
       {isLoading ? (
@@ -18,7 +18,7 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
           </div>
         </div>
       ) : (
-        <pre>{outputText || "Bản dịch..."}</pre>
+        <p>{outputText || "Bản dịch..."}</p>
       )}
       {/* ✅ Xử lý phát/dừng âm thanh khi nhấn vào icon */}
       {outputText && 

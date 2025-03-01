@@ -27,14 +27,14 @@ const TextPage = () => {
     
       const {isRecording, detectVoice, startRecording, stopRecording, isLoading: isLoadingRecord, setDetectVoice} = useSpeechToText(setInputText); // ✅ Sử dụng custom hook
     
-      const { setAnalysisResult, analysisResult, isAnalyzing, handleAnalyze, totalLength } = useAnalyze();
+      const { setAnalysisResult, analysisResult, isAnalyzing, handleAnalyze, totalLength, languagePercentages } = useAnalyze();
     
       const { handleClear } = useClear({ setInputText, setOutputText, setDetectVoice, setAnalysisResult });
     
       const outputRef = useRef(null);
 
   return (
-    <div>
+  <div>
       {(isLoading || isLoadingRecord || isAnalyzing) && <LoadingOverlay />}
       <div className="row">
         <InputTextArea
@@ -58,8 +58,8 @@ const TextPage = () => {
       <AnalyzeButton handleAnalyze={() => handleAnalyze(inputText)} isAnalyzing={isAnalyzing} />
     </div>
 
-    {analysisResult.length > 0 && <AnalysisResults analysisResult={analysisResult} totalLength={totalLength} />}
-    </div>
+    {analysisResult.length > 0 && <AnalysisResults analysisResult={analysisResult} totalLength={totalLength} languagePercentages={languagePercentages} />}
+  </div>
   );
 };
 
