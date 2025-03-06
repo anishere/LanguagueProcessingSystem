@@ -31,6 +31,8 @@ const InputTextArea = ({
   }, [inputText, outputRef]);
 
   return (
+  <>
+    {(isAnalyze) && <LoadingOverlay />}
     <div className="col-md-6 p-1 position-relative">
       {isAnalyze && <LoadingOverlay />}
       {detectVoice && <span className="mx-2 voiceDetected">Voice Detected: <b>{detectVoice}</b></span>}
@@ -66,6 +68,7 @@ const InputTextArea = ({
         <span className="playing-text">🔊 Đang phát: {currentLang}</span>
       )}
     </div>
+  </>
   );
 };
 

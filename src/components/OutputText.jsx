@@ -1,11 +1,14 @@
 import PropTypes from "prop-types";
 import { HiOutlineSpeakerWave, HiOutlineStopCircle } from "react-icons/hi2";
 import useTextToSpeech from "../hooks/useTextToSpeech"; // ✅ Import Hook mới
+import LoadingOverlay from "./LoadingOverlay";
 
 const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
-  const { playTextToSpeech, stopSpeaking, isSpeaking } = useTextToSpeech(); // ✅ Sử dụng Hook
+  const { playTextToSpeech, stopSpeaking, isSpeaking, isCallTTS } = useTextToSpeech(); // ✅ Sử dụng Hook
 
   return (
+  <>
+    {(isCallTTS) && <LoadingOverlay />}
     <div
       ref={outputRef} // ✅ Gán ref vào div output để cập nhật chiều cao từ InputTextArea
       className="border output-text position-relative"
@@ -18,7 +21,7 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
           </div>
         </div>
       ) : (
-        <p>{outputText || "Bản dịch..."}</p>
+        <p className={outputText ? "" : "placeholder"}>{outputText || "Bản dịch..."}</p>
       )}
       {/* ✅ Xử lý phát/dừng âm thanh khi nhấn vào icon */}
       {outputText && 
@@ -31,6 +34,7 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
       </i>
       }      
     </div>
+  </>
   );
 };
 

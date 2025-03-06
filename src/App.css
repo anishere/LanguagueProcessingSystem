@@ -69,6 +69,12 @@ textarea {
   white-space: pre-wrap;
 }
 
+.output-text p.placeholder {
+  background-color: transparent;
+  color: grey;
+  font-style: italic;
+}
+
 /* .output-text pre {
   font-family: "Roboto", "RobotoDraft", "Helvetica", "Arial", "sans-serif";
   font-size: 18px;
@@ -211,7 +217,7 @@ textarea {
 
 .playing-text {
   position: absolute;
-  bottom: 5px;
+  bottom: 8px;
   left: 124px;
   font-size: 12px;
   background: rgba(255, 69, 0, 0.9);
