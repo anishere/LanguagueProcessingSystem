@@ -9,7 +9,7 @@ export const translateText = async (text, targetLang) => {
       "/translateAI/translate",
       {
         text: text,
-        src_lang: "auto", // Tự động nhận diện ngôn ngữ
+        src_lang: "Auto", // Tự động nhận diện ngôn ngữ
         tgt_lang: targetLang, // Ngôn ngữ đích
       },
       {
