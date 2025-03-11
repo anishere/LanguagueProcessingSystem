@@ -20,6 +20,36 @@ textarea {
   width: 100%;
 }
 
+/* CSS cho nút tải xuống file audio */
+.icon-downloadAudio {
+  bottom: 10px;
+  right: 80px; /* Vị trí cạnh nút phát âm thanh */
+  cursor: pointer;
+  font-size: 1.3em;
+  opacity: 0.7;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.icon-downloadAudio:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* CSS cho icon copy - thêm vào file CSS của bạn */
+.icon-copy {
+  right: 26px;
+  bottom: 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.icon-copy:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 .selectLan {
   margin-bottom: 12px !important;
   width: 25%;
@@ -73,6 +103,46 @@ textarea {
   background-color: transparent;
   color: grey;
   font-style: italic;
+}
+
+/* Đặt vị trí cho icon speaker ở bên trái */
+.icon-speakerOut {
+  bottom: 8px;
+  left: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+
+/* Style cho icon khi đang phát */
+.icon-speakerOut.speaking {
+  color: #0d6efd;
+  animation: pulse 1.5s infinite;
+}
+
+/* Style cho các icon copy và download */
+.icon-action {
+  opacity: 0.7;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  margin: 0 12px;
+}
+
+.icon-action:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Animation cho icon đang phát */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* .output-text pre {

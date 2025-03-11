@@ -11,6 +11,7 @@ import useClear from "../hooks/useClear";
 import useAnalyze from "../hooks/useAnalyze";
 import AnalyzeButton from "../components/AnalyzeButton";
 import AnalysisResults from "../components/AnalysisResults";
+import useAnalyzeAndSpeech from "../hooks/useAnalyzeAndSpeech";
 
 const TextPage = () => {
     const {
@@ -28,8 +29,10 @@ const TextPage = () => {
       const {isRecording, detectVoice, startRecording, stopRecording, isLoading: isLoadingRecord, setDetectVoice} = useSpeechToText(setInputText); // ✅ Sử dụng custom hook
     
       const { setAnalysisResult, analysisResult, isAnalyzing, handleAnalyze, totalLength, languagePercentages } = useAnalyze();
+
+      const { clearDownloadableAudio } = useAnalyzeAndSpeech();
     
-      const { handleClear } = useClear({ setInputText, setOutputText, setDetectVoice, setAnalysisResult });
+      const { handleClear } = useClear({ setInputText, setOutputText, setDetectVoice, setAnalysisResult, clearDownloadableAudio });
     
       const outputRef = useRef(null);
 

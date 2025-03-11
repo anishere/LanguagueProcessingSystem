@@ -1,16 +1,52 @@
 import { useState, useRef, useEffect } from "react";
-import { textToSpeech } from "../api/apis"; // ✅ Import API Text-to-Speech
+import { textToSpeech } from "../api/apis";
 import { Bounce, toast } from "react-toastify";
 
 const useTextToSpeech = () => {
-  const [isSpeaking, setIsSpeaking] = useState(false); // ✅ Trạng thái phát âm thanh
-  const [isCallTTS, setIsCallTTS] = useState(false);   // ✅ Trạng thái gọi API TTS
-  const [currentLang, setCurrentLang] = useState("");  // ✅ Ngôn ngữ đang phát
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isCallTTS, setIsCallTTS] = useState(false);
+  const [currentLang, setCurrentLang] = useState("");
+  const [canDownload, setCanDownload] = useState(false); // ✅ Trạng thái cho phép tải xuống
   
-  const audioRef = useRef(null);     // ✅ Lưu đối tượng `Audio`
-  const lastTextRef = useRef("");    // ✅ Lưu văn bản đã xử lý trước đó
-  const lastLangRef = useRef("");    // ✅ Lưu ngôn ngữ đã xử lý trước đó
-  const audioURLRef = useRef(null);  // ✅ Lưu URL audio đã tạo trước đó
+  const audioRef = useRef(null);
+  const lastTextRef = useRef("");
+  const lastLangRef = useRef("");
+  const audioURLRef = useRef(null);
+  const audioBlobRef = useRef(null); // ✅ Lưu Blob để tải xuống
+  
+  // ✅ Hàm tải xuống file âm thanh
+  const downloadAudio = (fileName = "audio") => {
+    if (!audioBlobRef.current) {
+      console.warn("⚠ Không có dữ liệu âm thanh để tải xuống.");
+      return;
+    }
+    
+    try {
+      const url = URL.createObjectURL(audioBlobRef.current);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fileName}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url); // Giải phóng URL sau khi tải xuống
+      
+      console.log("📥 Đã tải xuống file âm thanh thành công.");
+    } catch (error) {
+      console.error("❌ Lỗi khi tải xuống file âm thanh:", error);
+      toast.error("❌ Không thể tải xuống file âm thanh!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+    }
+  };
 
   const playTextToSpeech = async (text, lang = "vi") => {
     if (!text.trim()) {
@@ -18,8 +54,11 @@ const useTextToSpeech = () => {
       return;
     }
 
+    // Reset trạng thái download khi phát âm thanh mới
+    setCanDownload(false);
+
     try {
-      // ✅ Kiểm tra nếu văn bản và ngôn ngữ giống lần gọi trước
+      // Kiểm tra nếu văn bản và ngôn ngữ giống lần gọi trước
       if (text === lastTextRef.current && lang === lastLangRef.current && audioURLRef.current) {
         console.log("🔄 Sử dụng lại audio đã lưu trong bộ nhớ đệm");
         setIsSpeaking(true);
@@ -34,26 +73,33 @@ const useTextToSpeech = () => {
           setIsSpeaking(false);
           setCurrentLang("");
           audioRef.current = null;
+          setCanDownload(true); // ✅ Cho phép tải xuống sau khi phát xong
         };
         return;
       }
 
-      setIsCallTTS(true);  // ✅ Bắt đầu gọi API
+      setIsCallTTS(true);
       console.log("🔊 Đang gọi API Text-to-Speech...");
 
       const audioBase64 = await textToSpeech(text, lang);
       
-      setIsCallTTS(false);  // ✅ Kết thúc gọi API
-      setIsSpeaking(true);  // ✅ Bắt đầu phát âm thanh
-      setCurrentLang(lang); // ✅ Cập nhật ngôn ngữ đang phát
+      setIsCallTTS(false);
+      setIsSpeaking(true);
+      setCurrentLang(lang);
 
       // Chuyển đổi Base64 thành Blob
-      const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: "audio/mpeg" });
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], 
+        { type: "audio/mpeg" }
+      );
+      
+      // Lưu Blob để tải xuống sau này
+      audioBlobRef.current = audioBlob;
 
-      // ✅ Tạo URL và phát âm thanh
+      // Tạo URL và phát âm thanh
       const audioURL = URL.createObjectURL(audioBlob);
       
-      // ✅ Lưu trữ thông tin để sử dụng lại sau này
+      // Lưu trữ thông tin để sử dụng lại sau này
       lastTextRef.current = text;
       lastLangRef.current = lang;
       audioURLRef.current = audioURL;
@@ -63,9 +109,10 @@ const useTextToSpeech = () => {
 
       audio.play();
       audio.onended = () => {
-        setIsSpeaking(false);  // ✅ Cập nhật trạng thái khi phát xong
-        setCurrentLang("");    // ✅ Xóa trạng thái ngôn ngữ khi kết thúc
+        setIsSpeaking(false);
+        setCurrentLang("");
         audioRef.current = null;
+        setCanDownload(true); // ✅ Cho phép tải xuống sau khi phát xong
       };
 
     } catch (error) {
@@ -84,31 +131,39 @@ const useTextToSpeech = () => {
       setIsSpeaking(false);
       setIsCallTTS(false);
       setCurrentLang("");
+      setCanDownload(false); // ✅ Reset trạng thái download khi có lỗi
     }
   };
 
   const stopSpeaking = () => {
     if (audioRef.current) {
-      audioRef.current.pause(); // ✅ Dừng phát âm thanh ngay lập tức
-      audioRef.current.currentTime = 0; // ✅ Reset về đầu
-      audioRef.current = null; // ✅ Xóa đối tượng audio
-      setIsSpeaking(false); // ✅ Cập nhật trạng thái
-      setCurrentLang(""); // ✅ Xóa trạng thái ngôn ngữ
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+      setIsSpeaking(false);
+      setCurrentLang("");
       console.log("⏹ Đã dừng phát âm thanh.");
     }
   };
 
-  // ✅ Thêm hàm để xóa bộ nhớ đệm khi cần
   const clearCache = () => {
     if (audioURLRef.current) {
-      URL.revokeObjectURL(audioURLRef.current); // ✅ Giải phóng tài nguyên
+      URL.revokeObjectURL(audioURLRef.current);
       audioURLRef.current = null;
     }
     lastTextRef.current = "";
     lastLangRef.current = "";
+    audioBlobRef.current = null; // ✅ Xóa Blob khi clear cache
+    setCanDownload(false); // ✅ Reset trạng thái download
+  };
+  
+  // ✅ Hàm reset trạng thái khi outputText thay đổi
+  const resetAudioState = (newText) => {
+    if (newText !== lastTextRef.current) {
+      clearCache();
+    }
   };
 
-  // ✅ Cleanup khi component unmount
   useEffect(() => {
     return () => {
       stopSpeaking();
@@ -120,9 +175,12 @@ const useTextToSpeech = () => {
     playTextToSpeech, 
     stopSpeaking, 
     clearCache,
+    resetAudioState, // ✅ Export hàm mới
+    downloadAudio,   // ✅ Export hàm mới
     isSpeaking, 
     isCallTTS, 
-    currentLang 
+    currentLang,
+    canDownload      // ✅ Export trạng thái mới
   };
 };
 
