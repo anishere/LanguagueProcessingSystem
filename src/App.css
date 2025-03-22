@@ -50,12 +50,6 @@ textarea {
   transform: scale(1.1);
 }
 
-.selectLan {
-  margin-bottom: 12px !important;
-  width: 25%;
-  display: inline-block;
-}
-
 .wrap-input {
   font-family: "Roboto", "RobotoDraft", "Helvetica", "Arial", "sans-serif";
   font-size: 24px;
@@ -81,7 +75,7 @@ textarea {
 }
 
 .output-text {
-  padding: 16px;
+  padding: 14px;
   font-family: "Roboto", "RobotoDraft", "Helvetica", "Arial", "sans-serif";
   font-size: 24px;
   line-height: 28px;

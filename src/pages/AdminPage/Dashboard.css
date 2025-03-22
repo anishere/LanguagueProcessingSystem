@@ -1,0 +1,42 @@
+.admin-dashboard {
+  width: 100%;
+}
+
+.admin-dashboard .dashboard-description {
+  display: block;
+  margin-top: 8px;
+}
+
+.admin-dashboard .stat-cards {
+  margin-bottom: 24px;
+}
+
+.admin-dashboard .ant-card {
+  height: 100%;
+}
+
+.admin-dashboard .recent-logins-card {
+  margin-bottom: 24px;
+}
+
+.admin-dashboard .ant-statistic-title {
+  font-size: 14px;
+}
+
+.admin-dashboard .ant-statistic-content {
+  font-size: 24px;
+}
+
+@media (max-width: 576px) {
+  .admin-dashboard .stat-cards {
+    margin-bottom: 16px;
+  }
+
+  .admin-dashboard .recent-logins-card {
+    margin-bottom: 16px;
+  }
+
+  .admin-dashboard .ant-card-head-title {
+    font-size: 16px;
+  }
+}

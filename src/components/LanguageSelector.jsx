@@ -1,31 +1,90 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
+import { useState, useEffect } from "react";
+import { Select, Input, Checkbox, Divider } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import languages from "../settings/languagesCode";
-import PropTypes from "prop-types";  
+import PropTypes from "prop-types";
+import "./LanguageSelector.css";
 
-const LanguageSelector = ({ targetLang = 'vi', setTargetLang, setTargetLangFull = 'vietnamese' }) => {
+const { Option } = Select;
+
+const LanguageSelector = ({ targetLang = 'vi', setTargetLang, setTargetLangFull }) => {
+  const [searchText, setSearchText] = useState("");
+  const [filteredOptions, setFilteredOptions] = useState(languages);
+  
+  // Lọc ngôn ngữ dựa trên từ khóa tìm kiếm
+  useEffect(() => {
+    if (searchText) {
+      setFilteredOptions(
+        languages.filter(lang => 
+          lang.name.toLowerCase().includes(searchText.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredOptions(languages);
+    }
+  }, [searchText]);
+  
+  // Xử lý khi chọn ngôn ngữ
+  const handleChange = (value, option) => {
+    setTargetLang(value);
+    setTargetLangFull(option.children);
+  };
+
+  // Tùy chỉnh dropdown với layout lưới 6 cột
+  const dropdownRender = () => (
+    <div className="language-dropdown-container">
+      <div className="custom-dropdown-search">
+        <Input
+          placeholder="Tìm kiếm ngôn ngữ"
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
+          autoFocus
+        />
+      </div>
+      <Divider style={{ margin: '4px 0' }} />
+      <div className="custom-dropdown-menu">
+        <div className="language-grid">
+          {filteredOptions.map(lang => (
+            <div 
+              key={lang.code}
+              className={`language-grid-item ${targetLang === lang.code ? 'selected' : ''}`}
+              onClick={() => handleChange(lang.code, { children: lang.name })}
+            >
+              <Checkbox checked={targetLang === lang.code} />
+              <span className="language-item-text">{lang.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+  
   return (
-    <select
-      className="form-select selectLan mb-md-0 mb-2 mt-2 mt-md-0"
+    <div className="selectorCus">
+      <Select
+      className="ant-custom-language-selector"
       value={targetLang}
-      onChange={(e) => {
-        const selectedOption = e.target.options[e.target.selectedIndex]; // ✅ Lấy option được chọn
-        setTargetLang(e.target.value); // ✅ Lưu code (value)
-        setTargetLangFull(selectedOption.text); // ✅ Lưu name (tên ngôn ngữ)
-      }}
-    >
-      {languages.map((lang) => (
-        <option key={lang.name} value={lang.code}>
+      onChange={handleChange}
+      dropdownMatchSelectWidth={false}
+      dropdownClassName="custom-language-dropdown"
+      dropdownRender={dropdownRender}
+      optionFilterProp="children"
+      >
+      {languages.map(lang => (
+        <Option key={lang.code} value={lang.code}>
           {lang.name}
-        </option>
+        </Option>
       ))}
-    </select>
+      </Select>
+    </div>
   );
 };
 
 LanguageSelector.propTypes = {
-  targetLang: PropTypes.string.isRequired,      // Chuỗi văn bản nhập vào
-  setTargetLang: PropTypes.func.isRequired,     // Hàm cập nhật văn bản
+  targetLang: PropTypes.string.isRequired,
+  setTargetLang: PropTypes.func.isRequired,
   setTargetLangFull: PropTypes.func.isRequired,
 };
 

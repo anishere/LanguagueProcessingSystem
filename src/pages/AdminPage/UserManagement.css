@@ -1,0 +1,113 @@
+.admin-user-management {
+  width: 100%;
+}
+
+.admin-user-management .user-management-description {
+  display: block;
+  margin-top: 8px;
+}
+
+.admin-user-management .toolbar {
+  margin-bottom: 16px;
+}
+
+/* Hiển thị tag loại tài khoản */
+.account-type-tag {
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Hiển thị trạng thái tài khoản */
+.status-tag {
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Nút thao tác */
+.admin-user-management .ant-btn-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form trong modal */
+.admin-user-management .ant-form-item-label {
+  font-weight: 500;
+}
+
+/* Thông tin người dùng trong modal */
+.user-info-summary {
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border-left: 4px solid #1890ff;
+}
+
+/* Style riêng cho modal credits */
+.credit-summary {
+  border-left: 4px solid var(--credit-color, #1890ff);
+}
+
+/* Style khi đang thêm credits */
+.modal-add-credits .credit-summary {
+  --credit-color: #52c41a;
+}
+
+/* Style khi đang trừ credits */
+.modal-subtract-credits .credit-summary {
+  --credit-color: #f5222d;
+}
+
+.user-info-summary div {
+  margin-bottom: 4px;
+}
+
+.user-info-summary div:last-child {
+  margin-bottom: 0;
+}
+
+/* Nút quản lý credits */
+.admin-user-management .credits-button-add {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.admin-user-management .credits-button-add:hover {
+  background-color: #f6ffed;
+  border-color: #52c41a;
+}
+
+.admin-user-management .credits-button-subtract {
+  color: #f5222d;
+  border-color: #f5222d;
+}
+
+.admin-user-management .credits-button-subtract:hover {
+  background-color: #fff1f0;
+  border-color: #f5222d;
+}
+
+/* Thiết lập độ rộng cột cố định */
+.admin-user-management .ant-table-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive styling */
+@media (max-width: 576px) {
+  .admin-user-management .toolbar {
+    flex-direction: column;
+  }
+
+  .admin-user-management .ant-space {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-user-management .ant-space > * {
+    margin-bottom: 8px !important;
+  }
+}

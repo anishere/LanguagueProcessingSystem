@@ -113,7 +113,7 @@ const InputTextArea = forwardRef(({
         <textarea
           ref={textareaRef}
           className="input-text"
-          placeholder="Nhập văn bản của bạn..."
+          placeholder="Automatic recognition..."
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           style={{ overflowY: "hidden", resize: "none" }}

@@ -78,43 +78,45 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
           <p className={outputText ? "" : "placeholder"}>{outputText || "Bản dịch..."}</p>
         )}
         
-        {/* Icons container - chỉ hiển thị khi có outputText */}
-        {outputText && (
-          <div className="position-absolute bottom-0 end-0 p-2 d-flex gap-2">
-            {/* ✅ Icon download audio - chỉ hiển thị khi đã phát xong âm thanh */}
-            {canDownload && (
+        <div>
+          {/* Icons container - chỉ hiển thị khi có outputText */}
+          {outputText && (
+            <div className="position-absolute bottom-0 end-0 p-2 d-flex gap-2">
+              {/* ✅ Icon download audio - chỉ hiển thị khi đã phát xong âm thanh */}
+              {canDownload && (
+                <i
+                  className="icon-action"
+                  onClick={handleDownloadAudio}
+                  title="📥 Tải xuống âm thanh"
+                  style={{ cursor: "pointer", fontSize: "1.2rem" }}
+                >
+                  <FiDownload />
+                </i>
+              )}
+              
+              {/* ✅ Icon copy text */}
               <i
                 className="icon-action"
-                onClick={handleDownloadAudio}
-                title="📥 Tải xuống âm thanh"
+                onClick={handleCopyText}
+                title="📋 Sao chép văn bản"
                 style={{ cursor: "pointer", fontSize: "1.2rem" }}
               >
-                <FiDownload />
+                <FiCopy />
               </i>
-            )}
-            
-            {/* ✅ Icon copy text */}
+            </div>
+          )}
+          
+          {/* Speaker icon */}
+          {outputText && (
             <i
-              className="icon-action"
-              onClick={handleCopyText}
-              title="📋 Sao chép văn bản"
-              style={{ cursor: "pointer", fontSize: "1.2rem" }}
+              className={`position-absolute icon-speakerOut ${isSpeaking ? "speaking" : ""}`}
+              onClick={isSpeaking ? stopSpeaking : () => playTextToSpeech(outputText, targetLang)}
+              title={isSpeaking ? "⏹ Dừng phát" : "🔊 Phát âm thanh"}
             >
-              <FiCopy />
+              {isSpeaking ? <HiOutlineStopCircle /> : <HiOutlineSpeakerWave />}
             </i>
-          </div>
-        )}
-        
-        {/* Speaker icon */}
-        {outputText && (
-          <i
-            className={`position-absolute icon-speakerOut ${isSpeaking ? "speaking" : ""}`}
-            onClick={isSpeaking ? stopSpeaking : () => playTextToSpeech(outputText, targetLang)}
-            title={isSpeaking ? "⏹ Dừng phát" : "🔊 Phát âm thanh"}
-          >
-            {isSpeaking ? <HiOutlineStopCircle /> : <HiOutlineSpeakerWave />}
-          </i>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

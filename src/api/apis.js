@@ -100,3 +100,305 @@ export const extractText = async (imageFile) => {
     throw error;
   }
 };
+
+// Hàm đăng nhập sử dụng API
+export const loginUser = async (email, password) => {
+  try {
+    const response = await axiosInstance.post(
+      "/auth/login",
+      {
+        email: email,
+        password: password,
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    // Trả về dữ liệu từ response, bao gồm token nếu có
+    return {
+      success: true,
+      data: response
+    };
+  } catch (error) {
+    console.error("Lỗi đăng nhập:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Đăng nhập thất bại"
+    };
+  }
+};
+
+// Thêm hàm đăng ký
+export const registerUser = async (username, email, password) => {
+  try {
+    const response = await axiosInstance.post(
+      "/auth/register",
+      {
+        username, // Tham số username được thêm theo cấu trúc API
+        email,
+        password
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: "Đăng ký thành công! Vui lòng đăng nhập."
+    };
+  } catch (error) {
+    console.error("Lỗi đăng ký:", error);
+    return {
+      success: false,
+      message: error.response?.data?.detail || "Đăng ký thất bại",
+      statusCode: error.response?.status || 500
+    };
+  }
+};
+
+// Hàm đặt lại mật khẩu (không cần mật khẩu cũ)
+export const resetUserPassword = async (userId, newPassword) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/reset-password/${userId}`,
+      {
+        new_password: newPassword
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response.data,
+      message: "Đặt lại mật khẩu thành công!"
+    };
+  } catch (error) {
+    console.error("Lỗi khi đặt lại mật khẩu:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Đặt lại mật khẩu thất bại"
+    };
+  }
+};
+
+// Hàm lấy danh sách tất cả người dùng
+export const getAllUsers = async (skip = 0, limit = 100) => {
+  try {
+    const response = await axiosInstance.get("/auth/users", {
+      params: {
+        skip,
+        limit
+      },
+      headers: {
+        "API-Key": APIKey,
+        "accept": "application/json"
+      }
+    });
+    
+    return {
+      success: true,
+      data: response
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách người dùng:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Không thể lấy danh sách người dùng"
+    };
+  }
+};
+
+export const updateUserProfile = async (userId, userData) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/profile/${userId}`,
+      {
+        username: userData.username,
+        email: userData.email
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response.data,
+      message: "Cập nhật thông tin thành công!"
+    };
+  } catch (error) {
+    console.error("Lỗi khi cập nhật thông tin:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Cập nhật thông tin thất bại"
+    };
+  }
+};
+
+export const changeAccountType = async (userId, isAdmin) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/change-account-type/${userId}`,
+      {
+        account_type: isAdmin ? "1" : "0"
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response.data,
+      message: `Đã chuyển thành tài khoản ${isAdmin ? "Admin" : "User"}!`
+    };
+  } catch (error) {
+    console.error("Lỗi khi thay đổi loại tài khoản:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Thay đổi loại tài khoản thất bại"
+    };
+  }
+};
+
+export const updateActiveStatus = async (userId, isActive) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/update-active-status/${userId}`,
+      {
+        is_active: isActive ? 1 : 0
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response.data,
+      message: `Đã ${isActive ? "kích hoạt" : "vô hiệu hóa"} tài khoản!`
+    };
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Cập nhật trạng thái thất bại"
+    };
+  }
+};
+
+export const deleteUser = async (userId) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/auth/delete/${userId}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response.data,
+      message: "Đã xóa tài khoản thành công!"
+    };
+  } catch (error) {
+    console.error("Lỗi khi xóa tài khoản:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Xóa tài khoản thất bại"
+    };
+  }
+};
+
+// Hàm cộng credits cho người dùng
+export const addUserCredits = async (userId, amount) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/add-credits/${userId}`,
+      {
+        amount: amount
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Đã cộng credits thành công!"
+    };
+  } catch (error) {
+    console.error("Lỗi khi cộng credits:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Cộng credits thất bại"
+    };
+  }
+};
+
+// Hàm trừ credits từ người dùng
+export const subtractUserCredits = async (userId, amount) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/subtract-credits/${userId}`,
+      {
+        amount: amount
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Đã trừ credits thành công!"
+    };
+  } catch (error) {
+    console.error("Lỗi khi trừ credits:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Trừ credits thất bại"
+    };
+  }
+};
