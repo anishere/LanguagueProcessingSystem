@@ -7,11 +7,13 @@ import {
   DashboardOutlined,
   SettingOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
+  HistoryOutlined
 } from '@ant-design/icons';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import AdminUserManagement from './UserManagement';
+import UserManagement from './UserManagement';
 import AdminDashboard from './Dashboard';
+import CreditHistory from './CreditHistory';
 import './Admin.css';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -38,6 +40,7 @@ const Admin = ({ onLogout }) => {
     const path = location.pathname;
     if (path === '/admin') return ['dashboard'];
     if (path.includes('/admin/users')) return ['users'];
+    if (path.includes('/admin/credits/history')) return ['credits-history'];
     if (path.includes('/admin/settings')) return ['settings'];
     return ['dashboard'];
   };
@@ -77,6 +80,11 @@ const Admin = ({ onLogout }) => {
               key: 'users',
               icon: <UserOutlined />,
               label: <Link to="/admin/users">Quản lý tài khoản</Link>,
+            },
+            {
+              key: 'credits-history',
+              icon: <HistoryOutlined />,
+              label: <Link to="/admin/credits/history">Lịch sử Credits</Link>,
             },
             {
               key: 'settings',
@@ -137,7 +145,9 @@ const Admin = ({ onLogout }) => {
                 {
                   title: location.pathname.includes('/users') 
                     ? 'Quản lý tài khoản' 
-                    : (location.pathname.includes('/settings') ? 'Cài đặt' : 'Dashboard')
+                    : (location.pathname.includes('/credits/history') 
+                      ? 'Lịch sử Credits'
+                      : (location.pathname.includes('/settings') ? 'Cài đặt' : 'Dashboard'))
                 },
               ]}
             />
@@ -146,7 +156,8 @@ const Admin = ({ onLogout }) => {
           <div className="admin-main-content">
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
-              <Route path="/users" element={<AdminUserManagement />} />
+              <Route path="/users" element={<UserManagement />} />
+              <Route path="/credits/history" element={<CreditHistory />} />
               <Route path="/settings" element={<div>Trang cài đặt</div>} />
             </Routes>
           </div>

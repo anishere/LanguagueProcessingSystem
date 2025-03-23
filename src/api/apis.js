@@ -287,10 +287,15 @@ export const changeAccountType = async (userId, isAdmin) => {
 
 export const updateActiveStatus = async (userId, isActive) => {
   try {
+    // Chuyển đổi isActive thành số để đảm bảo API nhận đúng kiểu dữ liệu
+    const statusValue = isActive ? 1 : 0;
+    
+    console.log(`Gửi API cập nhật trạng thái: userId=${userId}, is_active=${statusValue}`);
+    
     const response = await axiosInstance.put(
       `/auth/update-active-status/${userId}`,
       {
-        is_active: isActive ? 1 : 0
+        is_active: statusValue
       },
       {
         headers: {
@@ -303,11 +308,12 @@ export const updateActiveStatus = async (userId, isActive) => {
     
     return {
       success: true,
-      data: response.data,
-      message: `Đã ${isActive ? "kích hoạt" : "vô hiệu hóa"} tài khoản!`
+      data: response,
+      message: `Đã ${statusValue === 1 ? "kích hoạt" : "vô hiệu hóa"} tài khoản!`
     };
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái:", error);
+    console.error("Response error:", error.response?.data);
     return {
       success: false,
       error: error.response?.data?.detail || "Cập nhật trạng thái thất bại"
@@ -399,6 +405,78 @@ export const subtractUserCredits = async (userId, amount) => {
     return {
       success: false,
       error: error.response?.data?.detail || "Trừ credits thất bại"
+    };
+  }
+};
+
+// Lưu lịch sử giao dịch credits
+export const saveCreditHistory = async (userId, amount, transactionType, paymentMethod = "admin") => {
+  try {
+    const response = await axiosInstance.post(
+      "/history/credit/",
+      {
+        user_id: userId,
+        amount: amount,
+        transaction_type: transactionType, // "purchase" hoặc "subtract"
+        payment_method: paymentMethod
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Đã lưu lịch sử giao dịch credits thành công"
+    };
+  } catch (error) {
+    console.error("Lỗi khi lưu lịch sử giao dịch:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Lưu lịch sử giao dịch thất bại"
+    };
+  }
+};
+
+// Lấy lịch sử giao dịch credits
+export const getCreditHistory = async (userId = null, skip = 0, limit = 100, sortByDate = 'desc') => {
+  try {
+    // Xây dựng tham số query
+    let queryParams = `skip=${skip}&limit=${limit}&sort_by_date=${sortByDate}`;
+    
+    // Thêm user_id vào query nếu có
+    if (userId) {
+      queryParams += `&user_id=${userId}`;
+    }
+    
+    const response = await axiosInstance.get(
+      `/history/credit/?${queryParams}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    console.log(response)
+    return {
+      success: true,
+      data: response,
+      items: response.items || [],
+      total: response.total || 0
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy lịch sử giao dịch:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Lấy lịch sử giao dịch thất bại",
+      items: [],
+      total: 0
     };
   }
 };

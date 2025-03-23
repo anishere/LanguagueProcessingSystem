@@ -45,17 +45,43 @@ const UserManagementTable = ({
   // Cập nhật trạng thái hoạt động
   const handleStatusChange = async (userId, isActive) => {
     try {
+      // Thêm log để debug
+      console.log(`Đang cập nhật trạng thái cho user ID: ${userId}, trạng thái mới: ${isActive}`);
+      
+      // Hiển thị trạng thái loading cho toàn bộ bảng
+      const loadingMessage = message.loading({
+        content: `Đang ${isActive ? "kích hoạt" : "vô hiệu hóa"} tài khoản...`,
+        key: `status-${userId}`,
+        duration: 0,
+      });
+      
       const result = await updateActiveStatus(userId, isActive);
       
+      // Đóng message loading
+      loadingMessage();
+      
       if (result.success) {
-        message.success(result.message);
-        fetchUsers(); // Tải lại danh sách
+        message.success({
+          content: result.message,
+          key: `status-${userId}`,
+        });
+        fetchUsers(); // Tải lại danh sách để cập nhật UI
       } else {
-        message.error(result.error || 'Cập nhật trạng thái thất bại');
+        message.error({
+          content: result.error || 'Cập nhật trạng thái thất bại',
+          key: `status-${userId}`,
+        });
+        
+        // Khôi phục UI về trạng thái trước khi thay đổi
+        // Cách này không lý tưởng nhưng cần reload lại dữ liệu từ server
+        fetchUsers();
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái:', error);
       message.error('Đã xảy ra lỗi khi cập nhật trạng thái');
+      
+      // Khôi phục UI về trạng thái trước khi thay đổi
+      fetchUsers();
     }
   };
   
@@ -136,20 +162,41 @@ const UserManagementTable = ({
       title: 'Trạng thái',
       dataIndex: 'is_active',
       key: 'is_active',
-      render: (status, record) => (
-        <Switch
-          checkedChildren="Hoạt động"
-          unCheckedChildren="Tạm khóa"
-          checked={status === 1}
-          onChange={(checked) => handleStatusChange(record.id, checked)}
-          disabled={loading}
-        />
-      ),
+      render: (status, record) => {
+        // Console.log để debug giá trị thực tế
+        console.log(`User ${record.username} - is_active:`, status, typeof status);
+        
+        // Chuyển đổi status về boolean để đảm bảo hoạt động đúng
+        // So sánh lỏng lẻo (== thay vì ===) để xử lý cả string và number
+        const isActive = status == 1 || status === true || status === "1" || status === "true";
+        
+        return (
+          <Switch
+            checkedChildren="Hoạt động"
+            unCheckedChildren="Tạm khóa"
+            checked={isActive}
+            onChange={(checked) => {
+              // Log để debug
+              console.log(`Changing user ${record.id} status to:`, checked);
+              // Chuyển đổi checked thành 1/0 khi gửi đến API
+              handleStatusChange(record.id, checked ? 1 : 0);
+            }}
+            disabled={loading}
+          />
+        );
+      },
       filters: [
         { text: 'Hoạt động', value: 1 },
         { text: 'Tạm khóa', value: 0 },
       ],
-      onFilter: (value, record) => record.is_active === value,
+      // Cải thiện logic lọc để xử lý nhiều kiểu dữ liệu
+      onFilter: (value, record) => {
+        if (value === 1) {
+          return record.is_active == 1 || record.is_active === true || record.is_active === "1" || record.is_active === "true";
+        } else {
+          return record.is_active == 0 || record.is_active === false || record.is_active === "0" || record.is_active === "false" || record.is_active === null;
+        }
+      },
     },
     {
       title: 'Số dư (Credits)',

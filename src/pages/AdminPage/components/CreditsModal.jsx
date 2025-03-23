@@ -1,7 +1,13 @@
-import { Modal, Form, InputNumber, Button, Space, message } from 'antd';
+import { Modal, Form, InputNumber, Button, Space, message, Select } from 'antd';
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
-import { addUserCredits, subtractUserCredits } from '../../../api/apis';
+import { 
+  addUserCredits, 
+  subtractUserCredits, 
+  saveCreditHistory 
+} from '../../../api/apis';
+
+const { Option } = Select;
 
 const CreditsModal = ({ 
   visible, 
@@ -14,12 +20,19 @@ const CreditsModal = ({
 }) => {
   const [form] = Form.useForm();
   
+  // Lấy thông tin người dùng hiện tại từ localStorage
+  const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+  
   // Cập nhật credits của người dùng
   const handleUpdateCredits = async (values) => {
     if (!currentUser) return;
     
     setLoading(true);
     try {
+      // Xác định loại giao dịch (purchase = nạp, subtract = trừ)
+      const transactionType = creditOperation === 'add' ? 'purchase' : 'subtract';
+      
+      // Thực hiện nạp/trừ tiền
       let result;
       if (creditOperation === 'add') {
         result = await addUserCredits(currentUser.id, values.amount);
@@ -28,6 +41,18 @@ const CreditsModal = ({
       }
       
       if (result.success) {
+        // Lưu lịch sử giao dịch
+        const historyResult = await saveCreditHistory(
+          currentUser.id, 
+          values.amount, 
+          transactionType, 
+          values.paymentMethod || `admin:${adminUser.username || 'unknown'}`
+        );
+        
+        if (!historyResult.success) {
+          console.warn('Lưu lịch sử giao dịch không thành công:', historyResult.error);
+        }
+        
         message.success(result.message);
         fetchUsers(); // Tải lại danh sách
         onCancel(); // Đóng modal
@@ -68,6 +93,9 @@ const CreditsModal = ({
         layout="vertical"
         onFinish={handleUpdateCredits}
         preserve={false}
+        initialValues={{
+          paymentMethod: 'admin'
+        }}
       >
         {currentUser && (
           <div className="user-info-summary credit-summary">
@@ -92,6 +120,19 @@ const CreditsModal = ({
             formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={value => value.replace(/\$\s?|(,*)/g, '')}
           />
+        </Form.Item>
+        
+        <Form.Item
+          name="paymentMethod"
+          label="Phương thức thanh toán"
+        >
+          <Select placeholder="Chọn phương thức thanh toán">
+            <Option value="admin">Admin (mặc định)</Option>
+            <Option value="bank_transfer">Chuyển khoản ngân hàng</Option>
+            <Option value="credit_card">Thẻ tín dụng</Option>
+            <Option value="e_wallet">Ví điện tử</Option>
+            <Option value="promotional">Khuyến mãi</Option>
+          </Select>
         </Form.Item>
         
         <Form.Item>
