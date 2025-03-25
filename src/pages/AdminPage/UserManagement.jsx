@@ -37,6 +37,7 @@ const UserManagement = () => {
   // Lấy danh sách người dùng khi component mount
   useEffect(() => {
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.current, pagination.pageSize]);
   
   // Hàm lấy danh sách người dùng

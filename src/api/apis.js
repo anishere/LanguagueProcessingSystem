@@ -101,6 +101,8 @@ export const extractText = async (imageFile) => {
   }
 };
 
+//  Database
+
 // Hàm đăng nhập sử dụng API
 export const loginUser = async (email, password) => {
   try {
@@ -477,6 +479,160 @@ export const getCreditHistory = async (userId = null, skip = 0, limit = 100, sor
       error: error.response?.data?.detail || "Lấy lịch sử giao dịch thất bại",
       items: [],
       total: 0
+    };
+  }
+};
+
+export const changePassword = async (userId, currentPassword, newPassword) => {
+  try {
+    const response = await axiosInstance.put(
+      `/auth/change-password/${userId}`,
+      {
+        current_password: currentPassword,
+        new_password: newPassword
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      message: response.message || "Đổi mật khẩu thành công!"
+    };
+  } catch (error) {
+    console.error("Lỗi khi đổi mật khẩu:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Đổi mật khẩu thất bại"
+    };
+  }
+};
+
+// Lấy lịch sử dịch thuật
+export const getTranslationHistory = async (userId, skip = 0, limit = 100, sortByDate = 'desc') => {
+  try {
+    const queryParams = `user_id=${userId}&skip=${skip}&limit=${limit}&sort_by_date=${sortByDate}`;
+    
+    const response = await axiosInstance.get(
+      `/history/translation/?${queryParams}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      items: response.items || [],
+      total: response.total || 0
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy lịch sử dịch thuật:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Lấy lịch sử dịch thuật thất bại",
+      items: [],
+      total: 0
+    };
+  }
+};
+
+// Lưu lịch sử dịch thuật
+export const saveTranslationHistory = async (userId, inputText, outputText, sourceLanguage, targetLanguage) => {
+  try {
+    const response = await axiosInstance.post(
+      "/history/translation/",
+      {
+        user_id: userId,
+        input_text: inputText,
+        output_text: outputText,
+        source_language: sourceLanguage,
+        target_language: targetLanguage
+      },
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Đã lưu lịch sử dịch thành công",
+      credits_used: response.credits_used,
+      translation_id: response.translation_id
+    };
+  } catch (error) {
+    console.error("Lỗi khi lưu lịch sử dịch thuật:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Lưu lịch sử dịch thất bại"
+    };
+  }
+};
+
+// Xóa một lịch sử dịch thuật
+export const deleteTranslationHistory = async (historyId, userId) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/history/translation/${historyId}?user_id=${userId}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Đã xóa bản ghi lịch sử thành công"
+    };
+  } catch (error) {
+    console.error("Lỗi khi xóa lịch sử dịch thuật:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Xóa lịch sử dịch thất bại"
+    };
+  }
+};
+
+// Xóa tất cả lịch sử dịch thuật
+export const deleteAllTranslationHistory = async (userId) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/history/translation/delete-all?user_id=${userId}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Đã xóa tất cả bản ghi lịch sử dịch thuật",
+      deleted_count: response.deleted_count
+    };
+  } catch (error) {
+    console.error("Lỗi khi xóa tất cả lịch sử dịch thuật:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Xóa tất cả lịch sử dịch thất bại"
     };
   }
 };

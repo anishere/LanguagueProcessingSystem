@@ -36,7 +36,7 @@ const AdminDashboard = () => {
         setStats({
           totalUsers: userData.length,
           adminUsers: userData.filter(user => user.account_type === "1").length,
-          activeUsers: userData.filter(user => user.is_active === 1).length,
+          activeUsers: userData.filter(user => user.is_active == 1).length,
           recentUsers: userData.filter(user => 
             moment(user.created_at).isAfter(now.clone().subtract(recentDays, 'days'))
           ).length

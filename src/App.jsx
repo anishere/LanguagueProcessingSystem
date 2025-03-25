@@ -11,6 +11,10 @@ import Register from "./pages/Register";
 import Test from "./pages/Test";
 import { loginUser, registerUser } from "./api/apis";
 import Admin from "./pages/AdminPage/Admin";
+import Header from "./components/Header";
+import Profile from "./pages/Profile";
+
+//import { TranslationHistoryProvider } from "./contexts/TranslationHistoryContext";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -115,33 +119,36 @@ function App() {
     );
   };
 
+  // Component riêng cho trang Profile - Không bao gồm Navbar
+  const ProfileRoutes = () => {
+    return (
+      <>
+        <Header onLogout={handleLogout} />
+        <Profile />
+      </>
+    );
+  };
+
   const MainAppRoutes = () => {
     return (
-      <div className="container">
-        <h1 className="text-center text-primary mb-4">
-          Translate AI
-          <button 
-            onClick={handleLogout}
-            className="btn btn-outline-danger ms-3"
-            style={{ fontSize: '0.8rem', verticalAlign: 'middle' }}
-          >
-            Đăng xuất
-          </button>
-        </h1>
+      <>
+        <Header onLogout={handleLogout} />
+        <div className="container mt-3">
+          <Navbar isAdmin={isAdmin} />
 
-        <Navbar isAdmin={isAdmin} />
-
-        <Routes>
-          <Route path="/" element={<Navigate to="/text" />} />
-          <Route path="/text" element={<TextPage />} />
-          <Route path="/image" element={<ImagePage />} />
-          <Route path="/file" element={<FilePage />} />
-          <Route path="/web" element={<WebPage />} />
-          <Route path="/test" element={<Test />} />
-          {/* Redirect từ /admin vào trang chính nếu không có quyền admin */}
-          <Route path="/admin/*" element={isAdmin ? <Navigate to="/admin" /> : <Navigate to="/text" />} />
-        </Routes>
-      </div>
+          <Routes>
+            <Route path="/" element={<Navigate to="/text" />} />
+            <Route path="/text" element={<TextPage />} />
+            <Route path="/image" element={<ImagePage />} />
+            <Route path="/file" element={<FilePage />} />
+            <Route path="/web" element={<WebPage />} />
+            <Route path="/test" element={<Test />} />
+            {/* Đã loại bỏ route /profile khỏi đây */}
+            {/* Redirect từ /admin vào trang chính nếu không có quyền admin */}
+            <Route path="/admin/*" element={isAdmin ? <Navigate to="/admin" /> : <Navigate to="/text" />} />
+          </Routes>
+        </div>
+      </>
     );
   };
 
@@ -155,13 +162,16 @@ function App() {
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       ) : (
-        // Phân chia route giữa Admin và các trang chính
+        // Phân chia route giữa Admin, Profile và các trang chính
         <Routes>
           {/* Nếu là admin và truy cập vào /admin, hiển thị trang Admin riêng biệt */}
           <Route 
             path="/admin/*" 
             element={isAdmin ? <AdminRoutes /> : <Navigate to="/text" />} 
           />
+          
+          {/* Route cho trang Profile - chỉ hiển thị Header và Profile, không có Navbar */}
+          <Route path="/profile" element={<ProfileRoutes />} />
           
           {/* Tất cả các route khác sẽ vào layout chính */}
           <Route path="/*" element={<MainAppRoutes />} />

@@ -1,0 +1,84 @@
+/* Header.css */
+.site-header {
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 64px;
+  padding: 0;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 36px;
+  max-width: 100%;
+}
+
+/* Logo và tiêu đề */
+.header-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo-image {
+  height: 36px;
+  margin-right: 12px;
+}
+
+.logo-text {
+  margin: 0 !important;
+  color: #001529;
+}
+
+/* Phần User */
+.header-user {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-container {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.avatar-container:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.user-avatar {
+  background-color: #1890ff;
+  cursor: pointer;
+}
+
+/* Dropdown Menu */
+.user-dropdown-menu {
+  min-width: 160px;
+}
+
+.username-item {
+  padding: 8px 12px;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .header-container {
+    padding: 0 16px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+  }
+}

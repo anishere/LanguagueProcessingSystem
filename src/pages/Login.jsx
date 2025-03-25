@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from 'react';
 import './Login.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 
 function Login({ onLogin }) {
@@ -12,6 +12,8 @@ function Login({ onLogin }) {
 
     const location = useLocation();
     const [successMessage, setSuccessMessage] = useState('');
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (location.state && location.state.message) {
@@ -31,6 +33,8 @@ function Login({ onLogin }) {
             const loginSuccess = await onLogin(email, password);
             if (!loginSuccess) {
                 setError('Đăng nhập thất bại, vui lòng kiểm tra lại thông tin');
+            } else {
+                navigate("/text");
             }
         } catch (error) {
             setError('Có lỗi xảy ra khi đăng nhập');

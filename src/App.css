@@ -20,6 +20,10 @@ textarea {
   width: 100%;
 }
 
+a {
+  text-decoration: none !important;
+}
+
 /* CSS cho nút tải xuống file audio */
 .icon-downloadAudio {
   bottom: 10px;
@@ -354,3 +358,23 @@ textarea {
 }
 
 /* end loading handle voice */
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
