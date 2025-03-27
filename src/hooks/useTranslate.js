@@ -1,7 +1,11 @@
 // hooks/useTranslate.js
 import { useState } from "react";
-import { translateText, saveTranslationHistory } from "../api/apis";
+import { translateText, saveTranslationHistory, getCurrentUser } from "../api/apis";
+import { subtractUserCredits } from "../api/apis";
 import { Bounce, toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { toggleAction } from "../redux/actionSlice";
+
 
 const useTranslate = () => {
   const [inputText, setInputText] = useState("");
@@ -9,16 +13,16 @@ const useTranslate = () => {
   const [targetLang, setTargetLang] = useState("vi");
   const [isLoading, setIsLoading] = useState(false);
   const [targetLangFull, setTargetLangFull] = useState("vietnamese");
-  const [sourceLang, setSourceLang] = useState("auto"); // Thêm source language
-  const [sourceLangFull, setSourceLangFull] = useState("auto"); // Thêm source language đầy đủ
+  const [sourceLang, setSourceLang] = useState("auto");
+  const [sourceLangFull, setSourceLangFull] = useState("auto");
 
-  // Lấy thông tin người dùng từ localStorage
-  const getUserFromLocalStorage = () => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      return JSON.parse(userData);
-    }
-    return null;
+  const dispatch = useDispatch();
+
+  // Hàm đếm số từ
+  const countWords = (text) => {
+    const trimmedText = text.trim();
+    if (trimmedText === '') return 0;
+    return trimmedText.split(/\s+/).length;
   };
 
   const handleTranslate = async () => {
@@ -38,28 +42,78 @@ const useTranslate = () => {
     }
     
     try {
+      // Đếm số từ
+      const wordCount = countWords(inputText);
+      
+      // Lấy userId từ localStorage
+      const userData = localStorage.getItem("user");
+      const user = userData ? JSON.parse(userData) : null;
+      
+      // Kiểm tra và lấy thông tin người dùng
+      if (user?.user_id) {
+        const userInfoResult = await getCurrentUser(user.user_id);
+        
+        // Kiểm tra lấy thông tin người dùng thành công
+        if (!userInfoResult.success) {
+          toast.error("Không thể lấy thông tin người dùng", {
+            position: "top-right",
+            autoClose: 5000,
+            theme: "light",
+            transition: Bounce,
+          });
+          return "";
+        }
+
+        // Lấy số credits từ response
+        const userCredits = userInfoResult.data?.credits || 0;
+        
+        // Kiểm tra đủ credits không
+        if (userCredits < wordCount) {
+          toast.error(`Không đủ credits. Bạn cần ${wordCount} credits để dịch`, {
+            position: "top-right",
+            autoClose: 5000,
+            theme: "light",
+            transition: Bounce,
+          });
+          return "";
+        }
+
+        // Trừ credits
+        const creditsResult = await subtractUserCredits(user.user_id, wordCount);
+        
+        // Kiểm tra trừ credits thành công
+        if (!creditsResult.success) {
+          toast.error(creditsResult.error || "Không thể trừ credits", {
+            position: "top-right",
+            autoClose: 5000,
+            theme: "light",
+            transition: Bounce,
+          });
+          return "";
+        }
+      }
+      
+      // Thực hiện dịch
       setIsLoading(true);
       const result = await translateText(inputText, targetLangFull);
       setOutputText(result);
       
       // Lưu lịch sử dịch thuật
-      const user = getUserFromLocalStorage();
       if (user?.user_id) {
         try {
-          // Lưu lịch sử dịch thuật vào server
           await saveTranslationHistory(
             user.user_id,
             inputText,
             result,
-            sourceLangFull || "Auto", // Sử dụng "auto" nếu không có source language
+            sourceLangFull || "Auto",
             targetLangFull
           );
         } catch (historyError) {
           console.error("Lỗi khi lưu lịch sử dịch:", historyError);
-          // Không hiển thị lỗi lưu lịch sử cho người dùng
         }
       }
       
+      dispatch(toggleAction());
       return result;
     } catch (error) {
       console.error("Lỗi khi dịch văn bản:", error);

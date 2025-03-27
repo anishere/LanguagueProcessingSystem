@@ -17,8 +17,15 @@ import viVN from 'antd/lib/locale/vi_VN';
 import 'antd/dist/reset.css';
 import './Profile.css';
 
-// Import các hàm API
-import { getCreditHistory, updateUserProfile, changePassword, deleteUser, loginUser } from '../api/apis';
+// Import các hàm API, thêm getCurrentUser
+import { 
+  getCreditHistory, 
+  updateUserProfile, 
+  changePassword, 
+  deleteUser, 
+  loginUser, 
+  getCurrentUser 
+} from '../api/apis';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -39,30 +46,50 @@ const ProfilePage = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Lấy dữ liệu người dùng từ localStorage
+  // Lấy dữ liệu người dùng từ API thay vì từ localStorage
   useEffect(() => {
-    try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user) {
-        setUserData(user);
-        form.setFieldsValue({
-          username: user.username,
-          email: user.email
-        });
-      } else {
+    const fetchUserData = async () => {
+      try {
+        // Chỉ lấy user_id từ localStorage
+        const userStorage = JSON.parse(localStorage.getItem('user'));
+        
+        if (userStorage && userStorage.user_id) {
+          const userId = userStorage.user_id;
+          // Gọi API để lấy thông tin đầy đủ
+          const result = await getCurrentUser(userId);
+          if (result.success && result.data) {
+            // Lấy dữ liệu người dùng từ response
+            const user = result.data;
+            setUserData(user);
+            
+            // Cập nhật form với dữ liệu mới
+            form.setFieldsValue({
+              username: user.username,
+              email: user.email
+            });
+          } else {
+            notification.error({
+              message: 'Lỗi',
+              description: result.error || 'Không thể tải thông tin người dùng',
+            });
+          }
+        } else {
+          notification.error({
+            message: 'Lỗi',
+            description: 'Không thể tìm thấy ID người dùng, vui lòng đăng nhập lại',
+          });
+        }
+      } catch (error) {
         notification.error({
           message: 'Lỗi',
-          description: 'Không thể tải thông tin người dùng',
+          description: `Lỗi khi đọc dữ liệu: ${error.message}`,
         });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      notification.error({
-        message: 'Lỗi',
-        description: `Lỗi khi đọc dữ liệu: ${error.message}`,
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    };
+    
+    fetchUserData();
   }, [form]);
 
   // Lấy lịch sử giao dịch
@@ -94,7 +121,7 @@ const ProfilePage = () => {
     fetchCreditHistory();
   }, [userData]);
 
-  // Xử lý khi submit form
+  // Xử lý khi submit form - sửa đổi để cập nhật từ API
   const handleSubmit = async (values) => {
     if (!userData) return;
     
@@ -103,20 +130,23 @@ const ProfilePage = () => {
       const result = await updateUserProfile(userData.user_id, values);
       
       if (result.success) {
-        // Cập nhật dữ liệu trong localStorage
-        const updatedUser = { 
-          ...userData, 
-          username: values.username, 
-          email: values.email, 
-          updated_at: new Date().toISOString() 
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setUserData(updatedUser);
-        setIsEditing(false);
-        notification.success({
-          message: 'Thành công',
-          description: result.message || 'Cập nhật thông tin thành công!',
-        });
+        // Lấy lại thông tin người dùng từ API thay vì cập nhật localStorage
+        const userResult = await getCurrentUser(userData.user_id);
+        
+        if (userResult.success && userResult.data && userResult.data.data) {
+          const updatedUser = userResult.data.data;
+          setUserData(updatedUser);
+          setIsEditing(false);
+          notification.success({
+            message: 'Thành công',
+            description: result.message || 'Cập nhật thông tin thành công!',
+          });
+        } else {
+          notification.warning({
+            message: 'Thông báo',
+            description: 'Cập nhật thành công nhưng không thể tải lại thông tin mới nhất',
+          });
+        }
       } else {
         notification.error({
           message: 'Lỗi',
@@ -318,26 +348,11 @@ const ProfilePage = () => {
             status="error"
             title="Không Tìm Thấy Dữ Liệu"
             subTitle="Không thể tải thông tin người dùng. Vui lòng đăng nhập lại."
-            extra={<Button type="primary">Đăng Nhập</Button>}
+            extra={<Button type="primary" onClick={() => window.location.href = '/login'}>Đăng Nhập</Button>}
           />
         </Content>
       </Layout>
     );
-  }
-
-  // Mock dữ liệu localStorage nếu cần cho demo
-  if (!localStorage.getItem('user')) {
-    localStorage.setItem('user', JSON.stringify({
-      "user_id": 8,
-      "username": "admin",
-      "email": "admin@gmail.com",
-      "created_at": "2025-03-22T17:27:12",
-      "updated_at": "2025-03-24T16:57:40",
-      "last_login": "2025-03-24T16:57:40",
-      "is_active": true,
-      "credits": 5010,
-      "account_type": "1"
-    }));
   }
 
   return (

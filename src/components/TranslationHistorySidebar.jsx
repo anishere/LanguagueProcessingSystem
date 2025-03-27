@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import useTranslationHistory from "../hooks/useTranslationHistory";
 import "./TranslationHistorySidebar.css";
-import { FaHistory, FaTrash, FaArrowLeft, FaArrowRight, FaSync } from "react-icons/fa";
+import { FaHistory, FaTrash, FaSync } from "react-icons/fa";
 import { TbHistoryToggle } from "react-icons/tb";
 
 // eslint-disable-next-line react/prop-types

@@ -13,6 +13,10 @@ import { loginUser, registerUser } from "./api/apis";
 import Admin from "./pages/AdminPage/Admin";
 import Header from "./components/Header";
 import Profile from "./pages/Profile";
+import PaymentPage from "./pages/PaymentPage";
+import PaymentSuccessRedirect from './pages/PaymentSuccessRedirect';
+import store from './redux/store'
+import { Provider } from "react-redux";
 
 //import { TranslationHistoryProvider } from "./contexts/TranslationHistoryContext";
 
@@ -129,6 +133,16 @@ function App() {
     );
   };
 
+  // Thêm component PaymentRoutes
+  const PaymentRoutes = () => {
+    return (
+      <>
+        <Header onLogout={handleLogout} />
+        <PaymentPage />
+      </>
+    );
+  };
+
   const MainAppRoutes = () => {
     return (
       <>
@@ -153,6 +167,7 @@ function App() {
   };
 
   return (
+  <Provider store={store}>
     <Router>
       {!isLoggedIn ? (
         // Hiển thị trang Login hoặc Register nếu chưa đăng nhập
@@ -172,12 +187,18 @@ function App() {
           
           {/* Route cho trang Profile - chỉ hiển thị Header và Profile, không có Navbar */}
           <Route path="/profile" element={<ProfileRoutes />} />
+
+          {/* Route cho trang Payment - chỉ hiển thị Header và PaymentPage, không có Navbar */}
+          <Route path="/payment" element={<PaymentRoutes />} />
+
+          <Route path="/payment/success" element={<PaymentSuccessRedirect />} />
           
           {/* Tất cả các route khác sẽ vào layout chính */}
           <Route path="/*" element={<MainAppRoutes />} />
         </Routes>
       )}
     </Router>
+  </Provider>
   );
 }
 

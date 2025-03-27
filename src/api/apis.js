@@ -18,6 +18,7 @@ export const translateText = async (text, targetLang) => {
         },
       }
     );
+
     return response.translated_text;
   } catch (error) {
     console.error("Error during translation:", error);
@@ -195,6 +196,32 @@ export const resetUserPassword = async (userId, newPassword) => {
     return {
       success: false,
       error: error.response?.data?.detail || "Đặt lại mật khẩu thất bại"
+    };
+  }
+};
+
+// Hàm lấy thông tin người dùng hiện tại
+export const getCurrentUser = async (userId) => {
+  try {
+    const response = await axiosInstance.get(
+      `/auth/me/${userId}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    return {
+      success: true,
+      data: response,
+      message: "Lấy thông tin người dùng thành công"
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Lấy thông tin người dùng thất bại"
     };
   }
 };
@@ -396,7 +423,7 @@ export const subtractUserCredits = async (userId, amount) => {
         }
       }
     );
-    
+
     return {
       success: true,
       data: response,
@@ -633,6 +660,67 @@ export const deleteAllTranslationHistory = async (userId) => {
     return {
       success: false,
       error: error.response?.data?.detail || "Xóa tất cả lịch sử dịch thất bại"
+    };
+  }
+};
+
+// payment
+
+// Hàm tạo liên kết thanh toán
+export const createPayment = async (amount, description) => {
+  try {
+    const response = await axiosInstance.post(
+      "/payments/create-payment",
+      {
+        amount: amount,
+        description: description
+      },
+      {
+        headers: {
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    return {
+      success: true,
+      data: response,
+      message: "Tạo liên kết thanh toán thành công"
+    };
+  } catch (error) {
+    console.error("Lỗi khi tạo thanh toán:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Tạo thanh toán thất bại"
+    };
+  }
+};
+
+// Hàm kiểm tra trạng thái thanh toán
+export const checkPaymentStatus = async (orderCode) => {
+  try {
+    const response = await axiosInstance.post(
+      "/payments/check-payment",
+      {
+        order_code: orderCode
+      },
+      {
+        headers: {
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    return {
+      success: true,
+      data: response,
+      message: "Kiểm tra trạng thái thành công"
+    };
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Kiểm tra trạng thái thất bại"
     };
   }
 };

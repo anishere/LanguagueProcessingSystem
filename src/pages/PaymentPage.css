@@ -1,0 +1,141 @@
+/* Payment.css */
+.payment-container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.payment-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.payment-title {
+  margin-bottom: 16px;
+  color: #1890ff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-description {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 24px;
+}
+
+.payment-steps {
+  margin-bottom: 32px;
+}
+
+.credit-packages {
+  margin-bottom: 24px;
+}
+
+.package-card {
+  text-align: center;
+  position: relative;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.package-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(24, 144, 255, 0.15);
+}
+
+.selected-package {
+  border-color: #1890ff;
+  background-color: #e6f7ff;
+}
+
+.popular-package {
+  background-color: #f6ffed;
+}
+
+.popular-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #52c41a;
+  color: white;
+  padding: 2px 8px;
+  border-bottom-left-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.custom-amount-input {
+  font-size: 16px;
+}
+
+.credits-preview {
+  margin-top: 8px;
+  background-color: #f0f5ff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 4px solid #1890ff;
+}
+
+.summary-card {
+  background-color: #fafafa;
+  margin-bottom: 24px;
+}
+
+.summary-value {
+  font-weight: bold;
+  text-align: right;
+}
+
+.payment-button {
+  width: 100%;
+  height: 50px;
+  font-size: 16px;
+}
+
+.action-buttons {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.checking-payment {
+  text-align: center;
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #e6f7ff;
+  border-radius: 8px;
+  border: 1px dashed #1890ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+}
+
+.payment-method-selection {
+  margin-bottom: 20px;
+}
+
+@media (max-width: 576px) {
+  .payment-container {
+    padding: 0 8px;
+  }
+
+  .payment-title {
+    font-size: 20px;
+  }
+
+  .package-card {
+    margin-bottom: 16px;
+  }
+}

@@ -62,13 +62,13 @@
   padding: 10px 0;
 }
 
-.history-list {
+.translation-history-sidebar-container .history-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.history-item {
+.translation-history-sidebar-container .history-item {
   padding: 10px 15px;
   border-bottom: 1px solid #eee;
   display: flex;
@@ -77,22 +77,22 @@
   transition: background-color 0.2s;
 }
 
-.history-item:hover {
+.translation-history-sidebar-container .history-item:hover {
   background-color: #f8f9fa;
 }
 
-.history-content {
+.translation-history-sidebar-container .history-content {
   flex: 1;
   overflow: hidden;
   cursor: pointer;
   padding-right: 10px;
 }
 
-.history-text {
+.translation-history-sidebar-container .history-text {
   margin-bottom: 5px;
 }
 
-.input-text {
+.translation-history-sidebar-container .input-text {
   font-weight: 500;
   margin-bottom: 3px;
   white-space: nowrap;
@@ -107,7 +107,7 @@
   text-overflow: ellipsis;
 }
 
-.history-info {
+.translation-history-sidebar-container .history-info {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
