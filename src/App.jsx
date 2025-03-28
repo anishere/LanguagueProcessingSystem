@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./App.css";
-import { ToastContainer } from 'react-toastify';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 import TextPage from "./pages/TextPage";
 import ImagePage from "./pages/ImagePage";
 import FilePage from "./pages/FilePage";
@@ -47,9 +47,25 @@ function App() {
     try {
       // Gọi API đăng nhập
       const result = await loginUser(email, password);
-      
-      if (result.success) {
-        // Lưu token và thông tin người dùng vào localStorage
+
+      if (result && result.success) {
+        // Kiểm tra xem tài khoản có bị khóa không
+        if (!result.data.user.is_active) {
+          toast.error('Tài khoản của bạn đã bị khóa', {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+          });
+          return false;
+        }
+
+        // Tài khoản đang hoạt động - xử lý đăng nhập thành công
         localStorage.setItem("user", JSON.stringify(result.data.user || {}));
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("account_type", result.data.user.account_type);
