@@ -724,3 +724,60 @@ export const checkPaymentStatus = async (orderCode) => {
     };
   }
 };
+
+// Hàm lấy thông tin cấu hình
+export const getConfig = async () => {
+  try {
+    const response = await axiosInstance.get(
+      "/config/",
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin cấu hình:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Không thể lấy thông tin cấu hình",
+      data: null
+    };
+  }
+};
+
+// Hàm cập nhật cấu hình
+export const updateConfig = async (configData) => {
+  try {
+    const response = await axiosInstance.put(
+      "/config/",
+      configData,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      message: response.message || "Cập nhật cấu hình thành công"
+    };
+  } catch (error) {
+    console.error("Lỗi khi cập nhật cấu hình:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Cập nhật cấu hình thất bại",
+      data: null
+    };
+  }
+};

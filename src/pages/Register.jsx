@@ -67,7 +67,7 @@ function Register({ onRegister }) {
             <div className="container-login100" style={{ backgroundImage: "url('src/assets/imgs/bg-01.jpg')" }}>
                 <div className="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
                     <form className="login100-form validate-form" onSubmit={handleSubmit}>
-                        <span className="login100-form-title p-b-49">
+                        <span className="login100-form-title p-b-31">
                             Register
                         </span>
 

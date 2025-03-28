@@ -4,14 +4,14 @@ import {
   Layout, Typography, Card, Avatar, Tag, Button, Form, 
   Input, Spin, Table, Tabs, notification, Descriptions, Divider,
   Row, Col, Space, Skeleton, Result, Badge, ConfigProvider,
-  Modal, Alert
+  Modal, Alert, Empty
 } from 'antd';
 import { 
   UserOutlined, EditOutlined, SaveOutlined, 
   CloseCircleOutlined, HistoryOutlined, MailOutlined,
   CalendarOutlined, KeyOutlined, CreditCardOutlined,
   LockOutlined, ExclamationCircleOutlined, DeleteOutlined,
-  SettingOutlined
+  SettingOutlined, ReloadOutlined, SearchOutlined
 } from '@ant-design/icons';
 import viVN from 'antd/lib/locale/vi_VN';
 import 'antd/dist/reset.css';
@@ -45,6 +45,13 @@ const ProfilePage = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // State phân trang cho lịch sử giao dịch
+  const [historyPagination, setHistoryPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
   // Lấy dữ liệu người dùng từ API thay vì từ localStorage
   useEffect(() => {
@@ -94,32 +101,50 @@ const ProfilePage = () => {
 
   // Lấy lịch sử giao dịch
   useEffect(() => {
-    const fetchCreditHistory = async () => {
-      if (!userData) return;
+    fetchCreditHistory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData, historyPagination.current, historyPagination.pageSize]);
+
+  // Hàm lấy lịch sử giao dịch
+  const fetchCreditHistory = async () => {
+    if (!userData) return;
+    
+    setHistoryLoading(true);
+    try {
+      const skip = (historyPagination.current - 1) * historyPagination.pageSize;
+      const result = await getCreditHistory(
+        userData.user_id,
+        skip,
+        historyPagination.pageSize,
+        'desc'
+      );
       
-      setHistoryLoading(true);
-      try {
-        const result = await getCreditHistory(userData.user_id);
-        if (result.success) {
-          setCreditHistory(result.items || []);
-        } else {
-          notification.error({
-            message: 'Lỗi',
-            description: result.error || 'Không thể tải lịch sử giao dịch',
-          });
-        }
-      } catch (error) {
+      if (result.success) {
+        setCreditHistory(result.items || []);
+        setHistoryPagination(prev => ({
+          ...prev,
+          total: result.total || 0
+        }));
+      } else {
         notification.error({
           message: 'Lỗi',
-          description: `Lỗi: ${error.message}`,
+          description: result.error || 'Không thể tải lịch sử giao dịch',
         });
-      } finally {
-        setHistoryLoading(false);
       }
-    };
+    } catch (error) {
+      notification.error({
+        message: 'Lỗi',
+        description: `Lỗi: ${error.message}`,
+      });
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
-    fetchCreditHistory();
-  }, [userData]);
+  // Xử lý thay đổi phân trang
+  const handleHistoryTableChange = (pagination) => {
+    setHistoryPagination(pagination);
+  };
 
   // Xử lý khi submit form - sửa đổi để cập nhật từ API
   const handleSubmit = async (values) => {
@@ -133,8 +158,8 @@ const ProfilePage = () => {
         // Lấy lại thông tin người dùng từ API thay vì cập nhật localStorage
         const userResult = await getCurrentUser(userData.user_id);
         
-        if (userResult.success && userResult.data && userResult.data.data) {
-          const updatedUser = userResult.data.data;
+        if (userResult.success && userResult.data) {
+          const updatedUser = userResult.data;
           setUserData(updatedUser);
           setIsEditing(false);
           notification.success({
@@ -280,38 +305,6 @@ const ProfilePage = () => {
       default: return 'Basic';
     }
   };
-
-  // Cấu hình cột cho bảng lịch sử giao dịch
-  const historyColumns = [
-    {
-      title: 'Ngày',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      render: text => formatDate(text),
-    },
-    {
-      title: 'Mô Tả Giao Dịch',
-      dataIndex: 'description',
-      key: 'description',
-      render: text => text || 'Giao Dịch Credit',
-    },
-    {
-      title: 'Số Lượng',
-      dataIndex: 'amount',
-      key: 'amount',
-      render: amount => (
-        <Text className={amount > 0 ? 'positive-amount' : 'negative-amount'}>
-          {amount > 0 ? '+' : ''}{amount && amount.toLocaleString()}
-        </Text>
-      ),
-    },
-    {
-      title: 'Số Dư',
-      dataIndex: 'balance',
-      key: 'balance',
-      render: balance => balance && balance.toLocaleString(),
-    },
-  ];
 
   // Loading skeleton
   if (isLoading) {
@@ -517,17 +510,34 @@ const ProfilePage = () => {
                   </Card>
                 </TabPane>
                 
+                {/* Tab lịch sử giao dịch cập nhật */}
                 <TabPane 
                   tab={<span><HistoryOutlined /> Lịch Sử Giao Dịch</span>} 
                   key="2"
                 >
                   <Card className="content-card">
                     <div className="card-header">
-                      <h3 className="card-title">Lịch Sử Giao Dịch</h3>
-                      <div>
-                        <Text>
-                          <CreditCardOutlined /> Credits hiện tại: <span className="current-balance">{userData.credits.toLocaleString()}</span>
-                        </Text>
+                      <div className='w-100' style={{whiteSpace: "nowrap",display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 className="card-title">
+                          <HistoryOutlined /> Lịch Sử
+                        </h3>
+                        <div>
+                          <Space>
+                            <Button
+                              icon={<ReloadOutlined />}
+                              onClick={() => fetchCreditHistory()}
+                              loading={historyLoading}
+                              type="primary"
+                              ghost
+                              className='text-black p-1'
+                            >
+                              Làm mới
+                            </Button>
+                            <Text>
+                              <CreditCardOutlined /> Credits hiện tại: <span className="current-balance">{userData.credits.toLocaleString()}</span>
+                            </Text>
+                          </Space>
+                        </div>
                       </div>
                     </div>
                     <Divider className="section-divider" />
@@ -540,10 +550,125 @@ const ProfilePage = () => {
                     ) : creditHistory && creditHistory.length > 0 ? (
                       <Table 
                         dataSource={creditHistory}
-                        columns={historyColumns}
-                        rowKey={(record, index) => index}
-                        pagination={{ pageSize: 10 }}
+                        columns={[
+                          {
+                            title: 'ID',
+                            dataIndex: 'id',
+                            key: 'id',
+                            width: 80,
+                          },
+                          {
+                            title: 'Số lượng',
+                            dataIndex: 'amount',
+                            key: 'amount',
+                            render: (amount, record) => {
+                              const isPositive = record.transaction_type === 'purchase';
+                              return (
+                                <span style={{ color: isPositive ? '#52c41a' : '#f5222d', fontWeight: 'bold' }}>
+                                  {isPositive ? '+' : '-'}{amount.toLocaleString()}
+                                </span>
+                              );
+                            },
+                            sorter: (a, b) => a.amount - b.amount,
+                          },
+                          {
+                            title: 'Loại giao dịch',
+                            dataIndex: 'transaction_type',
+                            key: 'transaction_type',
+                            render: (type) => {
+                              let color = 'blue';
+                              let text = type;
+
+                              if (type === 'purchase') {
+                                color = 'green';
+                                text = 'Nạp tiền';
+                              } else if (type === 'subtract') {
+                                color = 'red';
+                                text = 'Trừ tiền';
+                              } else if (type === 'usage') {
+                                color = 'orange';
+                                text = 'Sử dụng dịch vụ';
+                              }
+
+                              return <Tag color={color}>{text}</Tag>;
+                            },
+                          },
+                          {
+                            title: 'Phương thức',
+                            dataIndex: 'payment_method',
+                            key: 'payment_method',
+                            render: (method) => {
+                              // Kiểm tra xem phương thức có chứa thông tin admin không
+                              if (method && method.startsWith('admin:')) {
+                                const adminName = method.split(':')[1];
+                                return <Tag color="purple">Admin: {adminName}</Tag>;
+                              }
+                              
+                              // Xử lý các phương thức khác
+                              let color = 'default';
+                              let text = method;
+                              
+                              switch (method) {
+                                case 'admin':
+                                  color = 'purple';
+                                  text = 'Admin';
+                                  break;
+                                case 'bank_transfer':
+                                  color = 'blue';
+                                  text = 'Chuyển khoản';
+                                  break;
+                                case 'credit_card':
+                                  color = 'gold';
+                                  text = 'Thẻ tín dụng';
+                                  break;
+                                case 'e_wallet':
+                                  color = 'cyan';
+                                  text = 'Ví điện tử';
+                                  break;
+                                case 'promotional':
+                                  color = 'magenta';
+                                  text = 'Khuyến mãi';
+                                  break;
+                                case 'translate':
+                                  color = 'geekblue';
+                                  text = 'Translate';
+                                  break;
+                                case 'analysis':
+                                  color = 'orange';
+                                  text = 'Analyze';
+                                  break;
+                                case 'text-to-speech':
+                                  color = 'volcano';
+                                  text = 'Text to Speech';
+                                  break;
+                                case 'speech-to-text':
+                                  color = 'lime';
+                                  text = 'Speech to Text';
+                                  break;
+                              }
+                              
+                              return <Tag color={color}>{text}</Tag>;
+                            },
+                          },
+                          {
+                            title: 'Thời gian',
+                            dataIndex: 'created_at',
+                            key: 'created_at',
+                            render: (text) => formatDate(text),
+                            sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
+                            defaultSortOrder: 'descend',
+                          },
+                        ]}
+                        rowKey="id"
+                        pagination={{ 
+                          ...historyPagination,
+                          showSizeChanger: true,
+                          showTotal: (total) => `Tổng cộng ${total} giao dịch`,
+                          pageSizeOptions: ['5', '10', '20', '50']
+                        }}
+                        onChange={handleHistoryTableChange}
                         className="transaction-table"
+                        scroll={{ x: 800 }}
                       />
                     ) : (
                       <Result

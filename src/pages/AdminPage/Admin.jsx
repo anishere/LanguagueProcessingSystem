@@ -14,6 +14,7 @@ import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import UserManagement from './UserManagement';
 import AdminDashboard from './Dashboard';
 import CreditHistory from './CreditHistory';
+import Settings from './Settings';  // Import component Settings mới
 import './Admin.css';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -158,7 +159,7 @@ const Admin = ({ onLogout }) => {
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/users" element={<UserManagement />} />
               <Route path="/credits/history" element={<CreditHistory />} />
-              <Route path="/settings" element={<div>Trang cài đặt</div>} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
         </Content>

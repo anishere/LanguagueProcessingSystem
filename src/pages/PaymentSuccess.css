@@ -1,0 +1,28 @@
+.payment-success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.payment-success-container h2 {
+  color: #2ecc71;
+  margin-bottom: 20px;
+}
+
+.payment-success-container .close-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.payment-success-container .close-button:hover {
+  background-color: #2980b9;
+}

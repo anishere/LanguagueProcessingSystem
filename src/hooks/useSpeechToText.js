@@ -1,8 +1,13 @@
 import { useState, useRef } from "react";
-import { speechToText, getCurrentUser, subtractUserCredits } from "../api/apis"; // ✅ Thêm API cần thiết
-import { Bounce, toast } from "react-toastify"; // ✅ Thêm toast để thông báo
-import { useDispatch } from "react-redux"; // ✅ Thêm Redux dispatch
-import { toggleAction } from "../redux/actionSlice"; // ✅ Thêm action
+import { 
+  speechToText, 
+  getCurrentUser, 
+  subtractUserCredits,
+  saveCreditHistory // ✅ Thêm import hàm saveCreditHistory
+} from "../api/apis";
+import { Bounce, toast } from "react-toastify";
+import { useDispatch } from "react-redux"; 
+import { toggleAction } from "../redux/actionSlice";
 
 const useSpeechToText = (setInputText) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -104,6 +109,26 @@ const useSpeechToText = (setInputText) => {
             }
             
             console.log(`✅ Đã trừ ${creditsRequired} credits cho chuyển giọng nói thành văn bản`);
+            
+            // ✅ THÊM: Lưu lịch sử giao dịch credits sau khi trừ credits thành công
+            try {
+              const historyResult = await saveCreditHistory(
+                user.user_id,
+                creditsRequired,
+                "subtract",
+                "speech-to-text" // Chỉ rõ là dùng cho tính năng speech-to-text
+              );
+              
+              if (!historyResult.success) {
+                console.warn("⚠️ Lưu lịch sử giao dịch không thành công:", historyResult.error);
+                // Không return ở đây để không ảnh hưởng đến quá trình xử lý chính
+              } else {
+                console.log("✅ Đã lưu lịch sử giao dịch credits thành công");
+              }
+            } catch (creditHistoryError) {
+              console.error("❌ Lỗi khi lưu lịch sử giao dịch credits:", creditHistoryError);
+              // Không return ở đây để không ảnh hưởng đến quá trình xử lý chính
+            }
             
             // Dispatch action để reset tiền trong Redux store
             dispatch(toggleAction());

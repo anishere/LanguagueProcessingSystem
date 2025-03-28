@@ -4,8 +4,7 @@ import { Layout, Dropdown, Avatar, Menu, Typography, Divider } from 'antd';
 import { UserOutlined, LogoutOutlined, ProfileOutlined, WalletOutlined, DashboardOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import './Header.css';
-import logo from '../assets/imgs/logo.png';
-import { getCurrentUser } from '../api/apis'; // Import hàm getCurrentUser
+import { getConfig, getCurrentUser } from '../api/apis'; // Import hàm getCurrentUser
 import { useSelector } from 'react-redux';
 
 const { Header: AntHeader } = Layout;
@@ -16,6 +15,8 @@ const Header = ({ onLogout }) => {
   const [visible, setVisible] = useState(false);
   const [userInfo, setUserInfo] = useState(null); // State để lưu thông tin người dùng từ API
   const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
+
+  const [logo, setLogo] = useState('');
 
   // Lấy user_id từ localStorage
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -44,6 +45,22 @@ const Header = ({ onLogout }) => {
       }
     };
     fetchUserInfo();
+
+    const fetchConfig = async () => {
+      try {
+        const response = await getConfig();
+        if (response.success) {
+          setLogo(response.data.logo_link);
+        } else {
+          console.error("Lỗi khi lấy thông tin người dùng:", response.error);
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchConfig();
   }, [userId, actionFlag]); 
 
   // Xử lý đăng xuất
@@ -60,7 +77,7 @@ const Header = ({ onLogout }) => {
         <Text strong>{userInfo?.username || 'Người dùng'}</Text>
       </Menu.Item>
       <Menu.Item key="credits" icon={<WalletOutlined />}>
-        <Text strong>{userInfo?.credits !== undefined ? userInfo.credits : 'Not found'}</Text>
+        <Link to='/payment' strong>{userInfo?.credits !== undefined ? userInfo.credits : 'Not found'}</Link>
       </Menu.Item>
       <Divider style={{ margin: '4px 0' }} />
       {userInfo?.account_type && userInfo.account_type === '1' && (

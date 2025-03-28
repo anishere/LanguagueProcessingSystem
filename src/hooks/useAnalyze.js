@@ -1,8 +1,13 @@
 import { useState, useRef } from "react";
-import { analyzeLanguage, getCurrentUser, subtractUserCredits } from "../api/apis"; // ✅ Thêm các API mới
+import { 
+  analyzeLanguage, 
+  getCurrentUser, 
+  subtractUserCredits,
+  saveCreditHistory // ✅ Thêm import hàm saveCreditHistory
+} from "../api/apis"; 
 import { Bounce, toast } from "react-toastify";
-import { useDispatch } from "react-redux"; // ✅ Thêm Redux
-import { toggleAction } from "../redux/actionSlice"; // ✅ Thêm Action
+import { useDispatch } from "react-redux"; 
+import { toggleAction } from "../redux/actionSlice"; 
 
 // ✅ Hàm loại bỏ ký tự đặc biệt & khoảng trắng
 const removeSpecialCharacters = (text) => {
@@ -123,6 +128,22 @@ const useAnalyze = () => {
           }
           
           console.log(`✅ Đã trừ ${wordCount} credits cho phân tích văn bản`);
+          
+          // ✅ THÊM: Lưu lịch sử giao dịch sau khi trừ credits thành công
+          const historyResult = await saveCreditHistory(
+            user.user_id,
+            wordCount,
+            "subtract", 
+            "analysis" // Chỉ rõ là dùng cho tính năng phân tích
+          );
+          
+          // Kiểm tra kết quả lưu lịch sử
+          if (!historyResult.success) {
+            console.warn("⚠️ Lưu lịch sử giao dịch không thành công:", historyResult.error);
+            // Không return ở đây để không ảnh hưởng đến quá trình phân tích
+          } else {
+            console.log("✅ Đã lưu lịch sử giao dịch thành công");
+          }
         }
         // ===== KẾT THÚC: THÊM LOGIC KIỂM TRA CREDITS =====
       }

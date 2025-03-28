@@ -49,7 +49,7 @@ function Login({ onLogin }) {
             <div className="container-login100" style={{ backgroundImage: "url('src/assets/imgs/bg-01.jpg')" }}>
                 <div className="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
                     <form className="login100-form validate-form" onSubmit={handleSubmit}>
-                        <span className="login100-form-title p-b-31">
+                        <span className="login100-form-title p-b-20">
                             Login
                         </span>
 
@@ -137,7 +137,7 @@ function Login({ onLogin }) {
                             </a>
                         </div>
 
-                        <div className="flex-col-c p-t-65">
+                        <div className="flex-col-c p-t-30">
                             <span className="txt1 p-b-17">
                                 Or Sign Up Using
                             </span>

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./App.css";
+import { ToastContainer } from 'react-toastify';
 import TextPage from "./pages/TextPage";
 import ImagePage from "./pages/ImagePage";
 import FilePage from "./pages/FilePage";
@@ -15,6 +16,7 @@ import Header from "./components/Header";
 import Profile from "./pages/Profile";
 import PaymentPage from "./pages/PaymentPage";
 import PaymentSuccessRedirect from './pages/PaymentSuccessRedirect';
+import PaymentFailRedirect from './pages/PaymentFailRedirect';
 import store from './redux/store'
 import { Provider } from "react-redux";
 
@@ -192,12 +194,14 @@ function App() {
           <Route path="/payment" element={<PaymentRoutes />} />
 
           <Route path="/payment/success" element={<PaymentSuccessRedirect />} />
+          <Route path="/payment/fail" element={<PaymentFailRedirect />} />
           
           {/* Tất cả các route khác sẽ vào layout chính */}
           <Route path="/*" element={<MainAppRoutes />} />
         </Routes>
       )}
     </Router>
+    <ToastContainer />
   </Provider>
   );
 }

@@ -1,0 +1,120 @@
+.admin-settings {
+  width: 100%;
+}
+
+.admin-settings .settings-description {
+  display: block;
+  margin-top: 8px;
+}
+
+.settings-form {
+  margin-top: 16px;
+}
+
+.settings-card {
+  margin-bottom: 24px;
+}
+
+/* Styling cho logo */
+.admin-settings .logo-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.admin-settings .logo-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  height: 150px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.admin-settings .logo-preview {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+}
+
+.admin-settings .logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #bfbfbf;
+}
+
+.admin-settings .logo-placeholder .anticon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.admin-settings .logo-upload {
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.admin-settings .logo-upload .ant-upload {
+  width: 100%;
+}
+
+.admin-settings .logo-upload .ant-btn {
+  width: 100%;
+}
+
+/* Styling cho bản đồ */
+.admin-settings .map-preview {
+  margin-top: 16px;
+  height: 200px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.admin-settings .map-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #bfbfbf;
+}
+
+.admin-settings .map-placeholder .anticon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+/* Buttons dưới form */
+.settings-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Loading container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .settings-tabs .ant-tabs-nav {
+    margin-bottom: 16px;
+  }
+
+  .logo-preview-container {
+    height: 120px;
+  }
+
+  .admin-settings .map-preview {
+    height: 160px;
+  }
+}

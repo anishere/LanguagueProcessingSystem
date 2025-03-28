@@ -1,7 +1,12 @@
 // hooks/useTranslate.js
 import { useState } from "react";
-import { translateText, saveTranslationHistory, getCurrentUser } from "../api/apis";
-import { subtractUserCredits } from "../api/apis";
+import { 
+  translateText, 
+  saveTranslationHistory, 
+  getCurrentUser,
+  subtractUserCredits,
+  saveCreditHistory // ✅ Thêm import hàm saveCreditHistory
+} from "../api/apis";
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { toggleAction } from "../redux/actionSlice";
@@ -90,6 +95,26 @@ const useTranslate = () => {
             transition: Bounce,
           });
           return "";
+        }
+        
+        // ✅ THÊM: Lưu lịch sử giao dịch credits sau khi trừ credits thành công
+        try {
+          const historyResult = await saveCreditHistory(
+            user.user_id,
+            wordCount,
+            "subtract",
+            "translate" // Chỉ rõ là dùng cho tính năng dịch
+          );
+          
+          if (!historyResult.success) {
+            console.warn("⚠️ Lưu lịch sử giao dịch không thành công:", historyResult.error);
+            // Không return ở đây để không ảnh hưởng đến quá trình dịch
+          } else {
+            console.log("✅ Đã lưu lịch sử giao dịch credits thành công");
+          }
+        } catch (creditHistoryError) {
+          console.error("Lỗi khi lưu lịch sử giao dịch credits:", creditHistoryError);
+          // Không return ở đây để không ảnh hưởng đến quá trình dịch
         }
       }
       

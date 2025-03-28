@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { analyzeLanguage, textToSpeech, getCurrentUser, subtractUserCredits } from "../api/apis"; // Thêm API mới
+import { 
+  analyzeLanguage, 
+  textToSpeech, 
+  getCurrentUser, 
+  subtractUserCredits,
+  saveCreditHistory
+} from "../api/apis";
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { toggleAction } from "../redux/actionSlice";
@@ -23,6 +29,9 @@ const useAnalyzeAndSpeech = (currentText) => {
   
   // ✅ Đối tượng theo dõi trạng thái credits cho mỗi văn bản
   const processedTextsRef = useRef({});
+  
+  // ✅ Lưu trữ các audio chunks riêng biệt cho từng ngôn ngữ
+  const audioChunksRef = useRef({});
   
   // Thêm dispatch từ Redux
   const dispatch = useDispatch();
@@ -64,102 +73,6 @@ const useAnalyzeAndSpeech = (currentText) => {
       
       console.log(`📊 Trạng thái credits: ${creditAlreadyDeducted ? 'Đã trừ trước đó' : 'Chưa trừ'}`);
       
-      // ✅ Sử dụng kết quả đã cache nếu có
-      if (cachedAnalysis) {
-        console.log("🔄 Sử dụng kết quả phân tích từ lịch sử");
-        
-        // Cập nhật refs
-        lastTextRef.current = text;
-        lastResultRef.current = cachedAnalysis.detectedLanguages;
-        
-        // ✅ Đánh dấu đã trừ credits cho văn bản này
-        markAsDeducted(text);
-        
-        // Nếu có audio đã cache, sử dụng lại
-        if (cachedAnalysis.audioData) {
-          lastAudioRef.current = cachedAnalysis.audioData;
-          
-          // Thông báo cho người dùng biết đang sử dụng kết quả đã cache
-          toast.info("Văn bản đã được phân tích trước đó, sử dụng kết quả đã lưu", {
-            position: "top-right",
-            autoClose: 3000,
-            theme: "light",
-            transition: Bounce,
-          });
-          
-          // Tạo lại blob từ dữ liệu audio đã lưu
-          const audioBlob = new Blob([cachedAnalysis.audioData], { type: "audio/mpeg" });
-          const audioURL = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioURL);
-          
-          setIsSpeaking(true);
-          audioRef.current = audio;
-          
-          await new Promise((resolve) => {
-            audio.onended = () => {
-              URL.revokeObjectURL(audioURL);
-              setCanShowDownload(true);
-              resolve();
-            };
-            audio.play().catch(error => {
-              console.error("❌ Lỗi khi phát audio:", error);
-              resolve();
-            });
-          });
-          
-          // Tạo URL để tải xuống từ audio đã cache
-          const downloadBlob = new Blob([cachedAnalysis.audioData], { type: "audio/mpeg" });
-          const downloadURL = URL.createObjectURL(downloadBlob);
-          
-          // Lưu URL để tải xuống
-          setDownloadableAudio({
-            url: downloadURL,
-            filename: `audio_${new Date().toISOString().replace(/[:.]/g, "-")}.mp3`
-          });
-          
-          setCanShowDownload(true);
-          setIsSpeaking(false);
-          
-          // ✅ Cập nhật timestamp khi sử dụng lại
-          cachedAnalysis.timestamp = new Date().getTime();
-          
-          return;
-        }
-      }
-      
-      // ✅ Kiểm tra nếu có audio từ trước (có thể do dừng sớm)
-      if (!isTextChanged && lastAudioRef.current) {
-        // Văn bản không thay đổi và đã có audio: Phát lại audio cũ
-        console.log("🔄 Sử dụng audio đã tạo trước đó");
-        
-        // ✅ Đánh dấu đã trừ credits cho văn bản này
-        markAsDeducted(text);
-        
-        setIsSpeaking(true);
-        
-        // Tạo lại blob từ dữ liệu audio đã lưu
-        const audioBlob = new Blob([lastAudioRef.current], { type: "audio/mpeg" });
-        const audioURL = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioURL);
-        
-        audioRef.current = audio;
-        
-        await new Promise((resolve) => {
-          audio.onended = () => {
-            URL.revokeObjectURL(audioURL);
-            setCanShowDownload(true);
-            resolve();
-          };
-          audio.play().catch(error => {
-            console.error("❌ Lỗi khi phát audio:", error);
-            resolve();
-          });
-        });
-        
-        setIsSpeaking(false);
-        return; // Kết thúc sớm vì đã phát audio
-      }
-      
       // ===== BẮT ĐẦU: LOGIC KIỂM TRA CREDITS =====
       // Đếm số từ trong văn bản
       const wordCount = countWords(text);
@@ -168,7 +81,6 @@ const useAnalyzeAndSpeech = (currentText) => {
       const userData = localStorage.getItem("user");
       const user = userData ? JSON.parse(userData) : null;
       
-      // ✅ FIX: Kiểm tra cả processedTextsRef để tránh trừ tiền nhiều lần
       // Chỉ trừ credits khi chưa xử lý văn bản này trước đó
       if (!creditAlreadyDeducted) {
         // Kiểm tra và lấy thông tin người dùng
@@ -216,7 +128,25 @@ const useAnalyzeAndSpeech = (currentText) => {
           
           console.log(`✅ Đã trừ ${wordCount} credits cho chuyển văn bản thành giọng nói`);
           
-          // ✅ Đánh dấu đã trừ credits cho văn bản này (NGAY LẬP TỨC)
+          // ✅ Lưu lịch sử giao dịch credits sau khi trừ credits thành công
+          try {
+            const historyResult = await saveCreditHistory(
+              user.user_id,
+              wordCount,
+              "subtract",
+              "text-to-speech" // Chỉ rõ là dùng cho tính năng text-to-speech
+            );
+            
+            if (!historyResult.success) {
+              console.warn("⚠️ Lưu lịch sử giao dịch không thành công:", historyResult.error);
+            } else {
+              console.log("✅ Đã lưu lịch sử giao dịch credits thành công");
+            }
+          } catch (creditHistoryError) {
+            console.error("❌ Lỗi khi lưu lịch sử giao dịch credits:", creditHistoryError);
+          }
+          
+          // Đánh dấu đã trừ credits cho văn bản này
           markAsDeducted(text);
           
           // Dispatch action để reset tiền trong Redux store
@@ -240,6 +170,14 @@ const useAnalyzeAndSpeech = (currentText) => {
         // Sử dụng kết quả phân tích đã lưu trong cache
         console.log("🔄 Sử dụng kết quả phân tích ngôn ngữ từ bộ nhớ đệm");
         detectedLanguages = cachedAnalysis.detectedLanguages;
+        
+        // Thông báo sử dụng kết quả đã cache
+        toast.info("Văn bản đã được phân tích trước đó, sử dụng kết quả đã lưu", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "light",
+          transition: Bounce,
+        });
       } else if (!isTextChanged && lastResultRef.current) {
         // Sử dụng kết quả phân tích đã lưu từ lần trước
         console.log("🔄 Sử dụng kết quả phân tích ngôn ngữ từ lần trước");
@@ -277,44 +215,42 @@ const useAnalyzeAndSpeech = (currentText) => {
         setIsAnalyze(false);
       }
       
-      // Phần phát âm thanh (giống nhau cho cả hai trường hợp)
+      // Phần phát âm thanh
       setIsSpeaking(true);
 
-      // ✅ CẢI TIẾN: Lưu trữ dữ liệu audio sớm để có thể phục hồi khi dừng
-      // Tạo danh sách audio chunks và một đối tượng lưu trữ tạm thời
+      // ✅ FIX: Phát âm thanh từ đầu đến cuối, không phụ thuộc vào cache audio
+      // Tạo danh sách audio chunks và một đối tượng lưu trữ
       const allAudioChunks = [];
-      const tempAudioChunks = [];
       
+      // ✅ FIX: Lưu trữ audio chunks theo từng ngôn ngữ
+      const chunksMap = {};
+      
+      let index = 0;
       for (const lang of detectedLanguages) {
         if (stopRequested.current) break;
 
         setCurrentLang(lang.name);
         console.log(`🎤 Phát: ${lang.text} (${lang.code})`);
 
-        const audioBase64 = await textToSpeech(lang.text, lang.code);
-
-        // Chuyển đổi Base64 thành Uint8Array
-        const audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+        // ✅ FIX: Kiểm tra nếu đã có audio cho đoạn văn bản này trong cache
+        const cachedAudioForLanguage = cachedAnalysis?.audioChunks?.[index];
         
-        // Lưu dữ liệu audio cho tải xuống
-        allAudioChunks.push(audioData);
-        tempAudioChunks.push(audioData);
-
-        // ✅ CẬP NHẬT AUDIO TẠM THỜI SAU MỖI PHẦN
-        // Cập nhật lastAudioRef.current sau mỗi phần để có thể phục hồi khi dừng sớm
-        if (tempAudioChunks.length > 0) {
-          const totalLength = tempAudioChunks.reduce((acc, chunk) => acc + chunk.length, 0);
-          const combinedAudio = new Uint8Array(totalLength);
-          
-          let offset = 0;
-          for (const chunk of tempAudioChunks) {
-            combinedAudio.set(chunk, offset);
-            offset += chunk.length;
-          }
-          
-          // Cập nhật audio tạm thời
-          lastAudioRef.current = combinedAudio;
+        let audioData;
+        
+        if (cachedAudioForLanguage) {
+          // Sử dụng audio từ cache
+          console.log(`🔄 Sử dụng audio từ cache cho "${lang.text.substring(0, 20)}..."`);
+          audioData = cachedAudioForLanguage;
+        } else {
+          // Tạo audio mới
+          const audioBase64 = await textToSpeech(lang.text, lang.code);
+          // Chuyển đổi Base64 thành Uint8Array
+          audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
         }
+        
+        // Lưu dữ liệu audio
+        allAudioChunks.push(audioData);
+        chunksMap[index] = audioData;
 
         // Tạo Blob và URL để phát
         const audioBlob = new Blob([audioData], { type: "audio/mpeg" });
@@ -336,6 +272,7 @@ const useAnalyzeAndSpeech = (currentText) => {
         });
 
         if (stopRequested.current) break;
+        index++;
       }
 
       // Tạo file audio kết hợp tất cả ngôn ngữ để tải xuống
@@ -353,10 +290,14 @@ const useAnalyzeAndSpeech = (currentText) => {
         // Lưu dữ liệu audio để sử dụng lại sau này
         lastAudioRef.current = combinedAudio;
         
-        // ✅ Lưu kết quả vào lịch sử phân tích
+        // ✅ FIX: Lưu audio chunks theo từng ngôn ngữ
+        audioChunksRef.current[text] = chunksMap;
+        
+        // ✅ Lưu kết quả vào lịch sử phân tích với từng chunks audio
         analysisHistoryRef.current[text] = {
           detectedLanguages,
           audioData: combinedAudio,
+          audioChunks: chunksMap, // Lưu từng phần audio riêng biệt
           timestamp: new Date().getTime()
         };
         
@@ -399,7 +340,8 @@ const useAnalyzeAndSpeech = (currentText) => {
     }
   };
 
-  // ✅ Hàm quản lý kích thước bộ nhớ đệm
+  // ✅ Phần còn lại của code giữ nguyên...
+  // Hàm quản lý kích thước bộ nhớ đệm
   const manageCacheSize = () => {
     const MAX_CACHE_ITEMS = 20; // Giới hạn số lượng mục lưu trong bộ nhớ đệm
     
@@ -423,6 +365,7 @@ const useAnalyzeAndSpeech = (currentText) => {
     }
   };
 
+  // ✅ Thay đổi cách xử lý khi dừng sớm: không lưu cache
   const stopSpeaking = () => {
     stopRequested.current = true;
 
@@ -434,23 +377,15 @@ const useAnalyzeAndSpeech = (currentText) => {
       setCurrentLang("");
       console.log("⏹ Đã dừng phát âm thanh.");
       
-      // ✅ LƯU CACHE KHI DỪNG SỚM
+      // ✅ FIX: Khi dừng không lưu audio không đầy đủ vào cache
+      // Chỉ đánh dấu là đã trừ credits
       const currentText = lastTextRef.current;
-      if (currentText && lastResultRef.current && lastAudioRef.current) {
-        // Đánh dấu đã xử lý văn bản này
+      if (currentText) {
         markAsDeducted(currentText);
-        
-        // Lưu kết quả vào lịch sử phân tích ngay cả khi dừng sớm
-        analysisHistoryRef.current[currentText] = {
-          detectedLanguages: lastResultRef.current,
-          audioData: lastAudioRef.current,
-          timestamp: new Date().getTime()
-        };
-        console.log("💾 Đã lưu kết quả phân tích và audio vào cache khi dừng sớm");
       }
       
-      // Khi dừng phát âm thanh, vẫn hiển thị nút tải xuống nếu có audio
-      if (lastAudioRef.current) {
+      // Khi dừng phát âm thanh, vẫn hiển thị nút tải xuống nếu có audio đầy đủ
+      if (lastAudioRef.current && !stopRequested.current) {
         setCanShowDownload(true);
       }
     }
@@ -464,9 +399,6 @@ const useAnalyzeAndSpeech = (currentText) => {
     }
     setCanShowDownload(false);
     lastAudioRef.current = null;
-    
-    // ✅ Không reset trạng thái đã xử lý khi xóa audio
-    // Điều này giúp đảm bảo không trừ credits lại khi xóa rồi tạo lại audio
   };
 
   // ✅ Thêm hàm xóa toàn bộ bộ nhớ đệm
@@ -480,6 +412,7 @@ const useAnalyzeAndSpeech = (currentText) => {
     
     // Xóa bộ nhớ đệm
     analysisHistoryRef.current = {};
+    audioChunksRef.current = {};
     lastTextRef.current = "";
     lastResultRef.current = null;
     processedTextsRef.current = {}; // ✅ Xóa cả trạng thái đã xử lý
