@@ -13,6 +13,7 @@ import Test from "./pages/Test";
 import { loginUser, registerUser } from "./api/apis";
 import Admin from "./pages/AdminPage/Admin";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import Profile from "./pages/Profile";
 import PaymentPage from "./pages/PaymentPage";
 import PaymentSuccessRedirect from './pages/PaymentSuccessRedirect';
@@ -147,6 +148,7 @@ function App() {
       <>
         <Header onLogout={handleLogout} />
         <Profile />
+        <Footer />
       </>
     );
   };
@@ -157,6 +159,7 @@ function App() {
       <>
         <Header onLogout={handleLogout} />
         <PaymentPage />
+        <Footer />
       </>
     );
   };
@@ -180,6 +183,7 @@ function App() {
             <Route path="/admin/*" element={isAdmin ? <Navigate to="/admin" /> : <Navigate to="/text" />} />
           </Routes>
         </div>
+        <Footer />
       </>
     );
   };
@@ -209,8 +213,16 @@ function App() {
           {/* Route cho trang Payment - chỉ hiển thị Header và PaymentPage, không có Navbar */}
           <Route path="/payment" element={<PaymentRoutes />} />
 
-          <Route path="/payment/success" element={<PaymentSuccessRedirect />} />
-          <Route path="/payment/fail" element={<PaymentFailRedirect />} />
+          <Route path="/payment/success" element={<>
+            <Header onLogout={handleLogout} />
+            <PaymentSuccessRedirect />
+            <Footer />
+          </>} />
+          <Route path="/payment/fail" element={<>
+            <Header onLogout={handleLogout} />
+            <PaymentFailRedirect />
+            <Footer />
+          </>} />
           
           {/* Tất cả các route khác sẽ vào layout chính */}
           <Route path="/*" element={<MainAppRoutes />} />

@@ -8,7 +8,8 @@ import {
   SettingOutlined, SaveOutlined, ReloadOutlined, 
   LinkOutlined, PhoneOutlined, 
   UserOutlined, EnvironmentOutlined, 
-  InfoCircleOutlined, GlobalOutlined
+  InfoCircleOutlined, GlobalOutlined,
+  MailOutlined, HomeOutlined
 } from '@ant-design/icons';
 import { getConfig, updateConfig } from '../../api/apis';
 import LogoUploader from './LogoUploader';
@@ -191,8 +192,21 @@ const Settings = () => {
               <Form.Item name="phone_2" label="Số điện thoại 2">
                 <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại phụ (nếu có)" />
               </Form.Item>
+              <Form.Item
+                name="email"
+                label="Email liên hệ"
+                rules={[{ type: 'email', message: 'Email không hợp lệ' }]}
+              >
+                <Input prefix={<MailOutlined />} placeholder="contact@example.com" />
+              </Form.Item>
             </Col>
             <Col xs={24} md={12}>
+              <Form.Item
+                name="address"
+                label="Địa chỉ công ty"
+              >
+                <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ thực tế của công ty" />
+              </Form.Item>
               <Form.Item
                 name="google_map_link"
                 label="Đường dẫn Google Maps"
