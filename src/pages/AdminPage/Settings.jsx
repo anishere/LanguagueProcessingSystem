@@ -30,19 +30,31 @@ const Settings = () => {
     fetchConfig();
   }, []);
 
+  // Add a debugging effect to log form values when they change
+  useEffect(() => {
+    const formValues = form.getFieldsValue();
+    console.log("Current form values:", formValues);
+  }, [form]);
+
   const fetchConfig = async () => {
     setLoading(true);
     try {
+      console.log("Fetching config data...");
       const result = await getConfig();
+      console.log("Config API response:", result);
+      
       if (result.success && result.data) {
         const configData = result.data;
+        console.log("Setting form values with:", configData);
+        
         setConfig(configData);
         form.setFieldsValue(configData);
+        
         if (configData.logo_link) {
           setOriginalLogo(configData.logo_link);
         }
       } else {
-        message.error('Không thể tải thông tin cấu hình');
+        message.error(result.error || 'Không thể tải thông tin cấu hình');
       }
     } catch (error) {
       console.error('Lỗi khi tải thông tin cấu hình:', error);
@@ -68,11 +80,13 @@ const Settings = () => {
   const handleSaveConfig = async (values) => {
     setSaving(true);
     try {
-      const dataToSubmit = {
-        ...values,
-        id: config?.id
-      };
-
+      // Chuẩn bị dữ liệu để gửi - không bao gồm ID vì API có thể không cần
+      const dataToSubmit = { ...values };
+      
+      // Loại bỏ những trường không cần thiết
+      delete dataToSubmit.id; // ID sẽ được xác định phía server
+      
+      // Xử lý logo nếu có thay đổi
       if (newLogoFile) {
         const base64Image = await convertToBase64(newLogoFile);
         dataToSubmit.logo_link = base64Image;
@@ -80,18 +94,20 @@ const Settings = () => {
         dataToSubmit.logo_link = originalLogo;
       }
 
+      console.log("Sending data to update config:", dataToSubmit);
+
+      // Gọi API cập nhật
       const result = await updateConfig(dataToSubmit);
+      console.log("Update config API response:", result);
+
       if (result.success) {
         message.success(result.message || 'Cập nhật cấu hình thành công');
-        if (result.data) {
-          const updatedConfig = result.data;
-          setConfig(updatedConfig);
-          form.setFieldsValue(updatedConfig);
-          if (updatedConfig.logo_link) {
-            setOriginalLogo(updatedConfig.logo_link);
-            setNewLogoFile(null);
-          }
-        }
+        
+        // Tải lại cấu hình sau khi cập nhật thành công
+        await fetchConfig();
+        
+        // Reset state cho logo mới nếu có
+        setNewLogoFile(null);
       } else {
         message.error(result.error || 'Cập nhật cấu hình thất bại');
       }

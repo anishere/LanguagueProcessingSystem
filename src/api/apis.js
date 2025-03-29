@@ -728,6 +728,8 @@ export const checkPaymentStatus = async (orderCode) => {
 // Hàm lấy thông tin cấu hình
 export const getConfig = async () => {
   try {
+    console.log("Calling getConfig API");
+    
     const response = await axiosInstance.get(
       "/config/",
       {
@@ -738,12 +740,16 @@ export const getConfig = async () => {
       }
     );
     
+    console.log("getConfig API response:", response);
+    
     return {
       success: true,
       data: response
     };
   } catch (error) {
     console.error("Lỗi khi lấy thông tin cấu hình:", error);
+    console.error("Response error data:", error.response?.data);
+    
     return {
       success: false,
       error: error.response?.data?.detail || "Không thể lấy thông tin cấu hình",
@@ -755,6 +761,22 @@ export const getConfig = async () => {
 // Hàm cập nhật cấu hình
 export const updateConfig = async (configData) => {
   try {
+    console.log("Calling updateConfig API with data:", configData);
+    
+    // Ensure all required fields are present
+    const requiredFields = ['name_web', 'address_web', 'api_key', 'name_owner', 'phone_1', 'price'];
+    const missingFields = requiredFields.filter(field => !configData[field]);
+    
+    if (missingFields.length > 0) {
+      console.error("Missing required fields:", missingFields);
+      return {
+        success: false,
+        error: `Thiếu các trường bắt buộc: ${missingFields.join(', ')}`,
+        data: null
+      };
+    }
+    
+    // Make the API call
     const response = await axiosInstance.put(
       "/config/",
       configData,
@@ -767,6 +789,8 @@ export const updateConfig = async (configData) => {
       }
     );
     
+    console.log("API response for updateConfig:", response);
+    
     return {
       success: true,
       data: response,
@@ -774,10 +798,25 @@ export const updateConfig = async (configData) => {
     };
   } catch (error) {
     console.error("Lỗi khi cập nhật cấu hình:", error);
+    console.error("Status code:", error.response?.status);
+    console.error("Response error:", error.response?.data);
+    
+    let errorMessage = "Cập nhật cấu hình thất bại";
+    if (error.response?.status === 400) {
+      errorMessage = "Dữ liệu không hợp lệ";
+    } else if (error.response?.status === 401) {
+      errorMessage = "Không có quyền cập nhật cấu hình";
+    } else if (error.response?.status === 404) {
+      errorMessage = "Không tìm thấy cấu hình";
+    } else if (error.response?.status === 500) {
+      errorMessage = "Lỗi máy chủ khi cập nhật cấu hình";
+    }
+    
     return {
       success: false,
-      error: error.response?.data?.detail || "Cập nhật cấu hình thất bại",
-      data: null
+      error: error.response?.data?.detail || errorMessage,
+      data: null,
+      statusCode: error.response?.status
     };
   }
 };
