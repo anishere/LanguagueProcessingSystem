@@ -7,24 +7,71 @@
   margin-top: 8px;
 }
 
+.admin-dashboard .dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .admin-dashboard .stat-cards {
   margin-bottom: 24px;
 }
 
 .admin-dashboard .ant-card {
   height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.admin-dashboard .ant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .admin-dashboard .recent-logins-card {
   margin-bottom: 24px;
 }
 
+.admin-dashboard .recent-login-title,
+.admin-dashboard .chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.admin-dashboard .chart-row {
+  margin-bottom: 24px;
+}
+
+.admin-dashboard .chart-card {
+  height: 100%;
+}
+
 .admin-dashboard .ant-statistic-title {
   font-size: 14px;
+  margin-bottom: 8px;
 }
 
 .admin-dashboard .ant-statistic-content {
   font-size: 24px;
+}
+
+.admin-dashboard .revenue-chart {
+  margin-bottom: 24px;
+}
+
+/* Custom table styles for the dashboard */
+.admin-dashboard .ant-table-thead > tr > th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.admin-dashboard .ant-table-tbody > tr:hover > td {
+  background-color: rgba(62, 64, 149, 0.05);
 }
 
 @media (max-width: 576px) {
@@ -38,5 +85,15 @@
 
   .admin-dashboard .ant-card-head-title {
     font-size: 16px;
+  }
+
+  .admin-dashboard .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .admin-dashboard .ant-statistic-content {
+    font-size: 20px;
   }
 }

@@ -1,14 +1,15 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
-import { Table, Tag, Input, Button, Space, Card, Typography, Select, DatePicker, Row, Col, Empty, Alert } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Tag, Input, Button, Space, Card, Typography, Select, DatePicker, Row, Col, Empty, Alert, message } from 'antd';
 import { SearchOutlined, ReloadOutlined, DollarOutlined, UserOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { getCreditHistory } from '../../../api/apis';
+import adminTheme from '../theme';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const CreditHistoryTable = ({ allUsers }) => {
+const CreditHistoryTable = ({ allUsers, onDataChanged, onUserSelected }) => {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [pagination, setPagination] = useState({
@@ -54,6 +55,11 @@ const CreditHistoryTable = ({ allUsers }) => {
           total: result.total
         }));
         setHasSearched(true);
+        
+        // Thông báo cho component cha biết dữ liệu đã thay đổi
+        if (onDataChanged) {
+          onDataChanged();
+        }
       } else {
         console.error("Lỗi khi lấy lịch sử:", result.error);
         setHistory([]);
@@ -69,51 +75,55 @@ const CreditHistoryTable = ({ allUsers }) => {
 
   // Tìm tên người dùng dựa vào ID
   const getUsernameById = (userId) => {
+    if (!allUsers || !Array.isArray(allUsers)) {
+      return `User ID: ${userId}`;
+    }
     const user = allUsers.find(user => user.id === userId);
     return user ? user.username : `User ID: ${userId}`;
   };
 
   // Xử lý khi chọn người dùng từ dropdown
-  const handleUserSelect = (value) => {
+  const handleUserSelect = useCallback((value) => {
     setSelectedUserId(value);
-    // Nếu chọn từ dropdown, cập nhật input
-    const userId = value ? value.toString() : '';
-    setUserIdInput(userId);
-    
-    // Reset trang về 1 khi chọn người dùng mới
-    setPagination(prev => ({
-      ...prev,
-      current: 1
-    }));
-  };
+    if (onUserSelected) {
+      onUserSelected(value);
+    }
+  }, [onUserSelected]);
 
-  // Xử lý khi nhập trực tiếp ID
+  // Xử lý khi nhập ID người dùng
   const handleUserIdInputChange = (e) => {
-    setUserIdInput(e.target.value);
+    const value = e.target.value.trim();
+    setUserIdInput(value);
+    
+    // Nếu người dùng xóa hết input, reset selectedUserId
+    if (!value) {
+      setSelectedUserId(null);
+      if (onUserSelected) {
+        onUserSelected(null);
+      }
+    }
   };
 
-  // Xử lý khi nhấn tìm kiếm
+  // Xử lý khi nhấn nút tìm kiếm
   const handleSearch = () => {
-    // Nếu input rỗng, reset
-    if (!userIdInput.trim()) {
-      setSelectedUserId(null);
-      setHistory([]);
-      setHasSearched(false);
+    let id = selectedUserId;
+    
+    // Nếu có nhập ID người dùng, ưu tiên sử dụng ID này
+    if (userIdInput) {
+      id = userIdInput;
+      setSelectedUserId(id);
+      if (onUserSelected) {
+        onUserSelected(id);
+      }
+    }
+    
+    // Nếu không có ID nào được chọn, không làm gì cả
+    if (!id) {
+      message.warning('Vui lòng nhập hoặc chọn ID người dùng');
       return;
     }
     
-    // Chuyển đổi input thành số
-    const userId = parseInt(userIdInput, 10);
-    if (isNaN(userId)) {
-      // Nếu không phải số, hiển thị thông báo lỗi
-      return;
-    }
-    
-    setSelectedUserId(userId);
-    setPagination(prev => ({
-      ...prev,
-      current: 1
-    }));
+    fetchCreditHistory();
   };
 
   // Xử lý thay đổi phân trang
@@ -136,13 +146,13 @@ const CreditHistoryTable = ({ allUsers }) => {
     let text = type;
 
     if (type === 'purchase') {
-      color = 'green';
+      color = adminTheme.success;
       text = 'Nạp tiền';
     } else if (type === 'subtract') {
-      color = 'red';
+      color = adminTheme.error;
       text = 'Trừ tiền';
     } else if (type === 'usage') {
-      color = 'orange';
+      color = adminTheme.warning;
       text = 'Sử dụng dịch vụ';
     }
 
@@ -236,9 +246,9 @@ const CreditHistoryTable = ({ allUsers }) => {
 
   return (
     <div className="credit-history">
-      <Card className="credit-history-card">
-        <Title level={4}>
-          <DollarOutlined /> Lịch sử giao dịch Credits
+      <Card className="credit-history-card admin-card">
+        <Title level={4} style={{ margin: 0 }}>
+          <DollarOutlined style={{ color: adminTheme.primaryColor }} /> Lịch sử giao dịch Credits
         </Title>
         <Text type="secondary">
           Nhập ID tài khoản hoặc chọn người dùng từ danh sách để xem lịch sử giao dịch credits.
@@ -251,41 +261,42 @@ const CreditHistoryTable = ({ allUsers }) => {
               placeholder="Nhập ID người dùng"
               value={userIdInput}
               onChange={handleUserIdInputChange}
-              prefix={<UserOutlined />}
-              type="number"
-              min={1}
-              onPressEnter={handleSearch}
-              allowClear
+              suffix={<UserOutlined style={{ color: adminTheme.primaryColor }} />}
             />
           </Col>
           <Col xs={24} sm={12} md={6} lg={5}>
             <Select
-              placeholder="Hoặc chọn người dùng"
+              placeholder="Chọn người dùng"
               style={{ width: '100%' }}
-              allowClear
               onChange={handleUserSelect}
               value={selectedUserId}
+              allowClear
               showSearch
-              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
             >
               {allUsers.map(user => (
-                <Option key={user.id} value={user.id}>{user.username} (ID: {user.id})</Option>
+                <Option key={user.id} value={user.id}>
+                  {user.username}
+                </Option>
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={14}>
+          <Col xs={24} sm={12} md={6} lg={5}>
             <Space>
               <Button 
-                type="primary"
+                type="primary" 
+                icon={<SearchOutlined />} 
                 onClick={handleSearch}
-                icon={<SearchOutlined />}
+                style={{ backgroundColor: adminTheme.primaryColor, borderColor: adminTheme.primaryColor }}
               >
                 Tìm kiếm
               </Button>
-              <Button
-                icon={<ReloadOutlined />}
+              <Button 
+                icon={<ReloadOutlined />} 
                 onClick={fetchCreditHistory}
-                loading={loading}
+                style={{ borderColor: adminTheme.primaryColor, color: adminTheme.primaryColor }}
                 disabled={!selectedUserId}
               >
                 Làm mới
@@ -294,38 +305,26 @@ const CreditHistoryTable = ({ allUsers }) => {
           </Col>
         </Row>
         
-        {/* Hiển thị thông tin người dùng đang xem */}
-        {selectedUserId && (
-          <Alert
-            message={
-              <span>
-                Đang xem lịch sử giao dịch của người dùng: <strong>{getUsernameById(selectedUserId)}</strong> (ID: {selectedUserId})
-              </span>
-            }
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
+        {!hasSearched ? (
+          <Empty 
+            image={Empty.PRESENTED_IMAGE_SIMPLE} 
+            description="Vui lòng chọn người dùng để xem lịch sử giao dịch"
           />
-        )}
-        
-        {/* Bảng lịch sử hoặc thông báo chưa chọn người dùng */}
-        {selectedUserId ? (
+        ) : history.length === 0 && !loading ? (
+          <Empty 
+            image={Empty.PRESENTED_IMAGE_SIMPLE} 
+            description="Không có dữ liệu giao dịch"
+          />
+        ) : (
           <Table
             columns={columns}
             dataSource={history}
             rowKey="id"
-            loading={loading}
             pagination={pagination}
             onChange={handleTableChange}
-            scroll={{ x: 1000 }}
-            locale={{
-              emptyText: hasSearched ? 'Không có dữ liệu giao dịch' : 'Vui lòng chọn người dùng để xem lịch sử'
-            }}
-          />
-        ) : (
-          <Empty 
-            description="Vui lòng nhập ID hoặc chọn người dùng để xem lịch sử giao dịch" 
-            style={{ padding: 40 }}
+            loading={loading}
+            scroll={{ x: 'max-content' }}
+            className="admin-table"
           />
         )}
       </Card>
@@ -334,7 +333,15 @@ const CreditHistoryTable = ({ allUsers }) => {
 };
 
 CreditHistoryTable.propTypes = {
-  allUsers: PropTypes.array.isRequired
+  allUsers: PropTypes.array,
+  onDataChanged: PropTypes.func,
+  onUserSelected: PropTypes.func
+};
+
+CreditHistoryTable.defaultProps = {
+  allUsers: [],
+  onDataChanged: null,
+  onUserSelected: null
 };
 
 export default CreditHistoryTable;

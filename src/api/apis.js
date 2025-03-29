@@ -824,3 +824,51 @@ export const getRevenueHistory = async (skip = 0, limit = 100, sortByDate = 'des
     };
   }
 };
+
+// Hàm lấy tất cả lịch sử giao dịch credits (không phụ thuộc vào user_id)
+export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'desc', startDate = null, endDate = null, transactionType = null) => {
+  try {
+    // Xây dựng tham số query
+    let queryParams = `skip=${skip}&limit=${limit}&sort_order=${sortOrder}`;
+    
+    if (startDate) {
+      queryParams += `&start_date=${startDate}`;
+    }
+    
+    if (endDate) {
+      queryParams += `&end_date=${endDate}`;
+    }
+    
+    if (transactionType) {
+      queryParams += `&transaction_type=${transactionType}`;
+    }
+    
+    const response = await axiosInstance.get(
+      `/history/credit/all?${queryParams}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      items: response.items || [],
+      total: response.total || 0,
+      totalAmount: response.total_purchase || 0,
+      totalUsage: response.total_usage || 0
+    };
+  } catch (error) {
+    console.error('Error fetching all credit history:', error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || 'Đã xảy ra lỗi khi lấy lịch sử giao dịch',
+      items: [],
+      total: 0,
+      totalAmount: 0,
+      totalUsage: 0
+    };
+  }
+};

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { Table, Tag, Card, Typography, DatePicker, Row, Col, Statistic, Space, Button, Empty } from 'antd';
 import { ReloadOutlined, DollarOutlined, FundOutlined } from '@ant-design/icons';
 import { getRevenueHistory } from '../../../api/apis';
+import adminTheme from '../theme';
+import PropTypes from 'prop-types';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-const RevenueHistoryTable = () => {
+const RevenueHistoryTable = ({ onDataChanged }) => {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [pagination, setPagination] = useState({
@@ -52,6 +54,11 @@ const RevenueHistoryTable = () => {
           ...prev,
           total: result.total
         }));
+        
+        // Thông báo cho component cha biết dữ liệu đã thay đổi
+        if (onDataChanged) {
+          onDataChanged();
+        }
       } else {
         console.error("Lỗi khi lấy lịch sử doanh thu:", result.error);
         setHistory([]);
@@ -117,7 +124,7 @@ const RevenueHistoryTable = () => {
       dataIndex: 'amount',
       key: 'amount',
       render: (amount) => (
-        <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
+        <span style={{ color: adminTheme.success, fontWeight: 'bold' }}>
           {formatCurrency(amount)}
         </span>
       ),
@@ -131,32 +138,32 @@ const RevenueHistoryTable = () => {
         // Kiểm tra xem phương thức có chứa thông tin admin không
         if (method && method.startsWith('admin:')) {
           const adminName = method.split(':')[1];
-          return <Tag color="purple">Admin: {adminName}</Tag>;
+          return <Tag color={adminTheme.secondaryDark}>Admin: {adminName}</Tag>;
         }
         
         // Xử lý các phương thức khác
-        let color = 'default';
+        let color = adminTheme.gray500;
         let text = method || 'Không xác định';
         
         switch (method) {
           case 'admin':
-            color = 'purple';
+            color = adminTheme.secondaryDark;
             text = 'Admin';
             break;
           case 'bank_transfer':
-            color = 'blue';
+            color = adminTheme.primaryColor;
             text = 'Chuyển khoản';
             break;
           case 'credit_card':
-            color = 'gold';
+            color = adminTheme.warning;
             text = 'Thẻ tín dụng';
             break;
           case 'e_wallet':
-            color = 'cyan';
+            color = adminTheme.info;
             text = 'Ví điện tử';
             break;
           case 'promotional':
-            color = 'magenta';
+            color = adminTheme.secondaryColor;
             text = 'Khuyến mãi';
             break;
         }
@@ -179,8 +186,8 @@ const RevenueHistoryTable = () => {
       <Card className="revenue-history-card">
         <Row gutter={[24, 24]} align="middle">
           <Col xs={24} md={16}>
-            <Title level={4}>
-              <FundOutlined /> Lịch sử doanh thu
+            <Title level={4} style={{ margin: 0 }}>
+              <FundOutlined style={{ color: adminTheme.primaryColor }} /> Lịch sử doanh thu
             </Title>
             <Text type="secondary">
               Danh sách tất cả các giao dịch nạp tiền và doanh thu của hệ thống.
@@ -188,10 +195,10 @@ const RevenueHistoryTable = () => {
           </Col>
           <Col xs={24} md={8}>
             <Statistic
-              title="Tổng doanh thu"
+              title={<span style={{ fontSize: '16px', fontWeight: 'bold' }}>Tổng doanh thu</span>}
               value={totalRevenue}
               precision={0}
-              valueStyle={{ color: '#3f8600' }}
+              valueStyle={{ color: adminTheme.success, fontWeight: 'bold', fontSize: '28px' }}
               prefix={<DollarOutlined />}
               formatter={(value) => `${new Intl.NumberFormat('vi-VN').format(value)} VND`}
             />
@@ -203,8 +210,20 @@ const RevenueHistoryTable = () => {
           <Col xs={24} sm={12}>
             <Space>
               <RangePicker onChange={handleDateRangeChange} />
-              <Button type="primary" onClick={handleSearch}>Tìm kiếm</Button>
-              <Button icon={<ReloadOutlined />} onClick={fetchRevenueHistory}>Làm mới</Button>
+              <Button 
+                type="primary" 
+                onClick={handleSearch}
+                style={{ backgroundColor: adminTheme.primaryColor, borderColor: adminTheme.primaryColor }}
+              >
+                Tìm kiếm
+              </Button>
+              <Button 
+                icon={<ReloadOutlined />} 
+                onClick={fetchRevenueHistory}
+                style={{ borderColor: adminTheme.primaryColor, color: adminTheme.primaryColor }}
+              >
+                Làm mới
+              </Button>
             </Space>
           </Col>
         </Row>
@@ -223,11 +242,20 @@ const RevenueHistoryTable = () => {
             onChange={handleTableChange}
             loading={loading}
             scroll={{ x: 'max-content' }}
+            className="admin-table"
           />
         )}
       </Card>
     </div>
   );
+};
+
+RevenueHistoryTable.propTypes = {
+  onDataChanged: PropTypes.func,
+};
+
+RevenueHistoryTable.defaultProps = {
+  onDataChanged: null,
 };
 
 export default RevenueHistoryTable; 

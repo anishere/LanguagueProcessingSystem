@@ -2,9 +2,71 @@
   width: 100%;
 }
 
-.admin-credit-history .credit-history-description {
+.credit-history-description {
   display: block;
   margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.credit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.chart-actions {
+  display: flex;
+  align-items: center;
+}
+
+.refresh-icon {
+  font-size: 18px;
+  cursor: pointer;
+  color: #3e4095;
+  transition: all 0.3s;
+}
+
+.refresh-icon:hover {
+  color: #5b5fd9;
+  transform: rotate(90deg);
+}
+
+.disabled-icon {
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.disabled-icon:hover {
+  color: #adb5bd;
+  transform: none;
+}
+
+.credit-trend-card {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.credit-trend-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .credit-history-tabs {
@@ -66,5 +128,123 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .credit-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-actions {
+    margin-top: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.chart-placeholder {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.selected-user-label {
+  color: #3e4095;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.admin-page {
+  padding: 24px;
+}
+
+.admin-alert {
+  margin-bottom: 16px;
+}
+
+.admin-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+  border-radius: 8px;
+}
+
+.admin-tabs .ant-tabs-nav {
+  margin-bottom: 0;
+}
+
+.chart-card {
+  padding: 16px;
+}
+
+.chart-placeholder {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #fafafa;
+  border-radius: 4px;
+  margin-top: 16px;
+}
+
+.selected-user-label {
+  color: #3e4095;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.credit-history {
+  margin-bottom: 24px;
+}
+
+.credit-history-card {
+  overflow: hidden;
+}
+
+.admin-table {
+  margin-top: 16px;
+}
+
+.filter-row {
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.statistic-card {
+  padding: 16px;
+  border-left: 4px solid;
+  background: #f9f9f9;
+  border-radius: 4px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-page {
+    padding: 16px;
+  }
+
+  .filter-row {
+    padding: 12px;
+  }
+
+  .chart-placeholder {
+    height: 200px;
   }
 }
