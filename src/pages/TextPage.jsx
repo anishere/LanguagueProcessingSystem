@@ -1,20 +1,20 @@
 // pages/TextPage.jsx
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import "../App.css";
+import { Card, Button, Input, Row, Col, Divider, Badge } from 'antd';
 import useTranslate from "../hooks/useTranslate"; 
 import useSpeechToText from "../hooks/useSpeechToText"; 
-import InputTextArea from "../components/InputTextArea";
-import LanguageSelector from "../components/LanguageSelector";
-import OutputText from "../components/OutputText";
-import LoadingOverlay from "../components/LoadingOverlay";
-import TranslateButton from "../components/TranslateButton";
-import useClear from "../hooks/useClear";
 import useAnalyze from "../hooks/useAnalyze";
-import AnalyzeButton from "../components/AnalyzeButton";
-import AnalysisResults from "../components/AnalysisResults";
+import useClear from "../hooks/useClear";
 import useAnalyzeAndSpeech from "../hooks/useAnalyzeAndSpeech";
+import useTextToSpeech from "../hooks/useTextToSpeech";
 import TranslationHistorySidebar from "../components/TranslationHistorySidebar";
+import LanguageSelector from "../components/LanguageSelector";
 import languages from "../settings/languagesCode";
+import LoadingOverlay from "../components/LoadingOverlay";
+import { ClearOutlined, SwapOutlined, AudioOutlined, SoundOutlined, CopyOutlined } from '@ant-design/icons';
+
+const { TextArea } = Input;
 
 const TextPage = () => {
     const {
@@ -30,15 +30,43 @@ const TextPage = () => {
         setSourceLangFull,
     } = useTranslate();
     
-    const {isRecording, detectVoice, startRecording, stopRecording, isLoading: isLoadingRecord, setDetectVoice} = useSpeechToText(setInputText);
+    const {isRecording, startRecording, stopRecording, isLoading: isLoadingRecord} = useSpeechToText(setInputText);
     
-    const { setAnalysisResult, analysisResult, isAnalyzing, handleAnalyze, totalLength, languagePercentages } = useAnalyze();
+    const { setAnalysisResult, analysisResult, isAnalyzing, totalLength, languagePercentages } = useAnalyze();
 
-    const { clearDownloadableAudio } = useAnalyzeAndSpeech();
+    // Correct hook for input text speech functionality
+    const { 
+      analyzeAndSpeak, 
+      stopSpeaking: stopInputSpeech, 
+      clearDownloadableAudio,
+      isSpeaking: isInputSpeaking,
+      currentLang // Add the currentLang to display which language is being spoken
+    } = useAnalyzeAndSpeech();
     
-    const { handleClear } = useClear({ setInputText, setOutputText, setDetectVoice, setAnalysisResult, clearDownloadableAudio });
+    // Correct hook for output text speech functionality
+    const {
+      playTextToSpeech,
+      stopSpeaking: stopOutputSpeech,
+      isSpeaking: isOutputSpeaking,
+      resetAudioState
+    } = useTextToSpeech();
+    
+    // Reset audio state when output text changes
+    useEffect(() => {
+      resetAudioState(outputText);
+    }, [outputText, resetAudioState]);
+    
+    const { handleClear } = useClear({ 
+      setInputText, 
+      setOutputText, 
+      setAnalysisResult, 
+      clearDownloadableAudio 
+    });
     
     const outputRef = useRef(null);
+    const [showHistory, setShowHistory] = useState(false);
+    const [copyInputSuccess, setCopyInputSuccess] = useState(false);
+    const [copyOutputSuccess, setCopyOutputSuccess] = useState(false);
     
     // Hàm xử lý khi chọn một lịch sử dịch từ sidebar
     const handleSelectTranslation = (translation) => {
@@ -60,36 +88,245 @@ const TextPage = () => {
       }
     };
 
+    // Handler for input text speech
+    const handleInputSpeech = () => {
+      if (isInputSpeaking) {
+        stopInputSpeech();
+      } else if (inputText) {
+        analyzeAndSpeak(inputText);
+      }
+    };
+    
+    // Handler for output text speech
+    const handleOutputSpeech = () => {
+      if (isOutputSpeaking) {
+        stopOutputSpeech();
+      } else if (outputText) {
+        playTextToSpeech(outputText, targetLang);
+      }
+    };
+    
+    // Copy handlers with success feedback
+    const copyToClipboard = (text, setSuccess) => {
+      if (text) {
+        navigator.clipboard.writeText(text);
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 1500);
+      }
+    };
+    
+    // Swap input and output text, and languages
+    const handleSwapTexts = () => {
+      if (!outputText) return;
+      
+      // Save current values
+      const tempInput = inputText;
+      const tempOutput = outputText;
+      
+      // Get current source language from analysis if available
+      let detectedSourceLang = "auto";
+      let detectedSourceLangFull = "Auto Detect";
+      
+      // Try to get the detected source language from analysis results
+      if (Object.keys(languagePercentages).length > 0) {
+        // Get language with highest percentage
+        const [topLang] = Object.entries(languagePercentages).sort((a, b) => b[1] - a[1])[0];
+        if (topLang) {
+          // Find language code for the detected language
+          const langObj = languages.find(l => l.name.toLowerCase() === topLang.toLowerCase());
+          if (langObj) {
+            detectedSourceLang = langObj.code;
+            detectedSourceLangFull = langObj.name;
+          }
+        }
+      }
+      
+      // Swap values
+      setInputText(tempOutput);
+      setOutputText(tempInput);
+      
+      // Set source language full name to old target language
+      setSourceLangFull(languages.find(lang => lang.code === targetLang)?.name || "");
+      
+      // Set target language to detected source language or default to English
+      if (detectedSourceLang !== "auto") {
+        setTargetLang(detectedSourceLang);
+        setTargetLangFull(detectedSourceLangFull);
+      } else {
+        setTargetLang("en");
+        setTargetLangFull("English");
+      }
+    };
+
   return (
-    <div className="position-relative">
+    <div className="translation-container">
       {(isLoading || isLoadingRecord || isAnalyzing) && <LoadingOverlay />}
       
-      {/* Thêm sidebar */}
-      <TranslationHistorySidebar onSelectTranslation={handleSelectTranslation} />
-      
-      <div className="row">
-        <InputTextArea
-          inputText={inputText}
-          setInputText={setInputText}
-          handleClear={handleClear}
-          isRecording={isRecording}
-          startRecording={startRecording}
-          stopRecording={stopRecording}
-          detectVoice={detectVoice}
-          outputRef={outputRef}
+      {showHistory && (
+        <TranslationHistorySidebar 
+          onSelectTranslation={handleSelectTranslation} 
+          onClose={() => setShowHistory(false)}
         />
-        <div className="col-md-6 p-1">
-          <LanguageSelector targetLang={targetLang} setTargetLang={setTargetLang} setTargetLangFull={setTargetLangFull} />
-          <OutputText targetLang={targetLang} outputText={outputText} isLoading={isLoading} outputRef={outputRef} />
-        </div>
-      </div>
+      )}
       
-      <div className="d-flex">
-        <TranslateButton handleTranslate={handleTranslate} isLoading={isLoading} />    
-        <AnalyzeButton handleAnalyze={() => handleAnalyze(inputText)} isAnalyzing={isAnalyzing} />
-      </div>
+      <Card className="translation-card">
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <div className="language-controls">
+              <div className="language-select-container source-lang">
+                <div className="auto-detect-text">
+                  <span>Tự động phát hiện ngôn ngữ</span>
+                </div>
+              </div>
+              
+              <div className="language-swap">
+                <Button 
+                  icon={<SwapOutlined />} 
+                  shape="circle" 
+                  className="swap-button"
+                  onClick={handleSwapTexts}
+                  disabled={!outputText}
+                  title="Đổi chỗ văn bản"
+                />
+              </div>
+              
+              <div className="language-select-container target-lang">
+                <LanguageSelector
+                  targetLang={targetLang}
+                  setTargetLang={setTargetLang}
+                  setTargetLangFull={setTargetLangFull}
+                />
+              </div>
+            </div>
+          </Col>
+          
+          <Col xs={24} md={12}>
+            <div className="input-container">
+              <TextArea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Nhập để dịch..."
+                autoSize={{ minRows: 6, maxRows: 12 }}
+                className="translation-textarea"
+              />
+              {isInputSpeaking && currentLang && (
+                <div className="current-speaking-language">
+                  <Badge status="processing" text={`Đang đọc: ${currentLang}`} />
+                </div>
+              )}
+              <div className="textarea-tools">
+                <div>
+                  <Button 
+                    icon={<ClearOutlined />}
+                    onClick={handleClear}
+                    type="text"
+                    title="Xóa văn bản"
+                  />
+                  <Button 
+                    icon={<AudioOutlined />}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    type="text"
+                    className={isRecording ? 'recording' : ''}
+                    title={isRecording ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
+                  />
+                  <Button 
+                    icon={<SoundOutlined />}
+                    onClick={handleInputSpeech}
+                    type="text"
+                    className={isInputSpeaking ? 'speaking' : ''}
+                    title={isInputSpeaking ? "Dừng phát âm" : "Phát âm văn bản"}
+                  />
+                  <Button 
+                    icon={<CopyOutlined />}
+                    onClick={() => copyToClipboard(inputText, setCopyInputSuccess)}
+                    type="text"
+                    className={copyInputSuccess ? 'copy-success' : ''}
+                    title="Sao chép văn bản"
+                  />
+                </div>
+                <span className="char-count">{inputText.length} / 5000</span>
+              </div>
+            </div>
+          </Col>
+          
+          <Col xs={24} md={12}>
+            <div className="output-container">
+              <TextArea
+                value={outputText}
+                readOnly
+                placeholder="Bản dịch sẽ xuất hiện ở đây..."
+                autoSize={{ minRows: 6, maxRows: 12 }}
+                className="translation-textarea"
+                ref={outputRef}
+              />
+              <div className="textarea-tools">
+                <div>
+                  <Button
+                    icon={<SoundOutlined />}
+                    onClick={handleOutputSpeech}
+                    type="text"
+                    className={isOutputSpeaking ? 'speaking' : ''}
+                    title={isOutputSpeaking ? "Dừng phát âm" : "Phát âm văn bản"}
+                  />
+                  <Button 
+                    icon={<CopyOutlined />}
+                    onClick={() => copyToClipboard(outputText, setCopyOutputSuccess)}
+                    type="text"
+                    className={copyOutputSuccess ? 'copy-success' : ''}
+                    title="Sao chép văn bản"
+                  />
+                </div>
+              </div>
+            </div>
+          </Col>
+          
+          <Col span={24}>
+            <div className="translation-actions">
+              <Button 
+                type="primary" 
+                onClick={handleTranslate}
+                disabled={!inputText || isLoading}
+                className="translate-button"
+              >
+                Nộp
+              </Button>
+              
+              <Button
+                onClick={() => setShowHistory(!showHistory)}
+                className="history-button"
+              >
+                Lịch sử
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </Card>
 
-      {analysisResult.length > 0 && <AnalysisResults analysisResult={analysisResult} totalLength={totalLength} languagePercentages={languagePercentages} />}
+      {analysisResult.length > 0 && (
+        <Card className="analysis-card mt-3">
+          <h4>Kết quả phân tích</h4>
+          <Divider />
+          <div className="analysis-results">
+            <div className="language-analysis">
+              <p>Tổng số ký tự: {totalLength}</p>
+              <div className="language-percentages">
+                {Object.entries(languagePercentages).map(([lang, percentage]) => (
+                  <div key={lang} className="language-percentage-item">
+                    <span>{lang}: </span>
+                    <div className="percentage-bar">
+                      <div 
+                        className="percentage-fill" 
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span>{percentage.toFixed(2)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

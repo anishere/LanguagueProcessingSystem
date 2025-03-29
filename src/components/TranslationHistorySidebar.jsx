@@ -1,12 +1,12 @@
 // components/TranslationHistorySidebar.jsx
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import useTranslationHistory from "../hooks/useTranslationHistory";
 import "./TranslationHistorySidebar.css";
-import { FaHistory, FaTrash, FaSync } from "react-icons/fa";
-import { TbHistoryToggle } from "react-icons/tb";
+import { Drawer, List, Button, Typography, Spin, Empty } from 'antd';
+import { HistoryOutlined, DeleteOutlined, ReloadOutlined, CloseOutlined } from '@ant-design/icons';
 
 // eslint-disable-next-line react/prop-types
-const TranslationHistorySidebar = ({ onSelectTranslation }) => {
+const TranslationHistorySidebar = ({ onSelectTranslation, onClose }) => {
   const {
     history,
     isLoading,
@@ -15,22 +15,14 @@ const TranslationHistorySidebar = ({ onSelectTranslation }) => {
     refreshHistory
   } = useTranslationHistory();
   
-  const [isOpen, setIsOpen] = useState(false);
-  const sidebarRef = useRef(null);
-  
-  // Xử lý click bên ngoài để đóng sidebar
+  // Refresh history only once when drawer is opened
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target) && isOpen) {
-        setIsOpen(false);
-      }
-    };
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
+    // Only refresh if history is empty or when explicitly needed
+    if (history.length === 0) {
+      refreshHistory();
+    }
+    // Don't include refreshHistory in dependency array to prevent continuous calls
+  }, [history.length]);
   
   // Format thời gian
   const formatDate = (dateString) => {
@@ -53,6 +45,8 @@ const TranslationHistorySidebar = ({ onSelectTranslation }) => {
         sourceLanguage: item.source_language,
         targetLanguage: item.target_language
       });
+      // Close drawer after selection
+      if (onClose) onClose();
     }
   };
   
@@ -63,99 +57,85 @@ const TranslationHistorySidebar = ({ onSelectTranslation }) => {
   };
   
   return (
-    <div className="translation-history-sidebar-container">
-      {/* Nút toggle sidebar */}
-      <button 
-        className={`sidebar-toggle-btn ${isOpen ? "open" : ""}`}
-        onClick={() => {
-          setIsOpen(!isOpen)
-          refreshHistory();
-        }}
-        title={isOpen ? "Đóng lịch sử" : "Mở lịch sử dịch thuật"}
-      >
-        {/* {isOpen ? <FaArrowRight /> : <FaArrowLeft />} */}
-        <TbHistoryToggle />
-        <span className="ms-2 d-none d-md-inline"></span>
-      </button>
-      
-      {/* Sidebar */}
-      <div 
-        ref={sidebarRef}
-        className={`translation-history-sidebar ${isOpen ? "open" : ""}`}
-      >
-        <div className="sidebar-header">
-          <h5 className="mb-0">
-            <FaHistory className="me-2" />
-            Lịch sử dịch thuật
-          </h5>
-          <div className="d-flex">
-            <button 
-              className="btn btn-sm btn-outline-secondary me-2" 
+    <Drawer
+      title={
+        <div className="history-drawer-header">
+          <Typography.Title level={5}>
+            <HistoryOutlined /> Lịch sử dịch thuật
+          </Typography.Title>
+          <div className="history-actions">
+            <Button
+              icon={<ReloadOutlined />}
               onClick={refreshHistory}
-              disabled={isLoading}
+              size="small"
               title="Làm mới lịch sử"
-            >
-              <FaSync />
-            </button>
-            <button 
-              className="btn btn-sm btn-danger" 
+              disabled={isLoading}
+            />
+            <Button
+              icon={<DeleteOutlined />}
               onClick={handleDeleteAllHistory}
-              disabled={isLoading || history.length === 0}
+              size="small"
+              danger
               title="Xóa tất cả lịch sử"
-            >
-              <FaTrash />
-            </button>
+              disabled={isLoading || history.length === 0}
+            />
           </div>
         </div>
-        
-        <div className="sidebar-content">
-          {isLoading ? (
-            <div className="text-center p-3">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Đang tải...</span>
-              </div>
-              <p className="mt-2">Đang tải lịch sử dịch thuật...</p>
-            </div>
-          ) : history.length === 0 ? (
-            <div className="text-center p-3">
-              <p className="text-muted">Chưa có lịch sử dịch thuật</p>
-            </div>
-          ) : (
-            <ul className="history-list">
-              {history.map((item) => (
-                <li key={item.id} className="history-item">
-                  <div 
-                    className="history-content"
-                    onClick={() => handleSelectTranslation(item)}
-                  >
-                    <div className="history-text">
-                      <div className="input-text">{truncateText(item.input_text)}</div>
-                      <div className="output-text">{truncateText(item.output_text)}</div>
-                    </div>
-                    <div className="history-info">
-                      <small className="text-muted">
-                        {item.source_language} → {item.target_language}
-                      </small>
-                      <small className="text-muted">{formatDate(item.created_at)}</small>
-                    </div>
-                  </div>
-                  <button 
-                    className="btn btn-sm btn-outline-danger delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteHistory(item.id);
-                    }}
-                    title="Xóa bản ghi này"
-                  >
-                    <FaTrash />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+      }
+      placement="right"
+      onClose={onClose}
+      open={true}
+      width={320}
+      closeIcon={<CloseOutlined />}
+      className="history-drawer"
+    >
+      {isLoading ? (
+        <div className="loading-container">
+          <Spin tip="Đang tải..." />
         </div>
-      </div>
-    </div>
+      ) : history.length === 0 ? (
+        <Empty description="Chưa có lịch sử dịch thuật" />
+      ) : (
+        <List
+          dataSource={history}
+          renderItem={(item) => (
+            <List.Item
+              className="history-item"
+              actions={[
+                <Button 
+                  key="delete"
+                  icon={<DeleteOutlined />} 
+                  size="small"
+                  danger
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteHistory(item.id);
+                  }}
+                />
+              ]}
+              onClick={() => handleSelectTranslation(item)}
+            >
+              <List.Item.Meta
+                title={
+                  <div className="history-item-title">
+                    <span>{truncateText(item.input_text, 30)}</span>
+                    <span className="text-muted">
+                      {item.source_language} → {item.target_language}
+                    </span>
+                  </div>
+                }
+                description={
+                  <div className="history-item-content">
+                    <div className="history-output">{truncateText(item.output_text, 40)}</div>
+                    <small className="history-date">{formatDate(item.created_at)}</small>
+                  </div>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </Drawer>
   );
 };
 

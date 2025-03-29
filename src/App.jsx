@@ -6,6 +6,7 @@ import TextPage from "./pages/TextPage";
 import ImagePage from "./pages/ImagePage";
 import FilePage from "./pages/FilePage";
 import WebPage from "./pages/WebPage";
+import AnalysisPage from "./pages/AnalysisPage";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -174,6 +175,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/text" />} />
             <Route path="/text" element={<TextPage />} />
+            <Route path="/analysis" element={<AnalysisPage />} />
             <Route path="/image" element={<ImagePage />} />
             <Route path="/file" element={<FilePage />} />
             <Route path="/web" element={<WebPage />} />

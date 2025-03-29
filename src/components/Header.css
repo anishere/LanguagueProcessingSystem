@@ -15,52 +15,95 @@
   justify-content: space-between;
   align-items: center;
   height: 100%;
-  padding: 0 36px;
+  padding: 0 20px;
   max-width: 100%;
 }
 
-/* Logo và tiêu đề */
-.header-logo {
+/* Logo và navigation */
+.header-left {
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .logo-link {
   display: flex;
   align-items: center;
   text-decoration: none;
+  margin-right: 20px;
 }
 
 .logo-image {
-  height: 62px;
-  margin-right: 12px;
+  height: 32px;
+  margin-right: 8px;
 }
 
 .logo-text {
-  margin: 0 !important;
-  color: #001529;
+  font-weight: bold;
+  font-size: 18px;
+  color: #2196f3;
 }
 
-/* Phần User */
-.header-user {
+.main-navigation {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.header-tabs {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.header-tabs .tab-item {
+  height: 64px;
+  border-bottom: 2px solid transparent;
+}
+
+.header-tabs .tab-item.active {
+  border-bottom: 2px solid #2196f3;
+}
+
+/* Header right section */
+.header-right {
   display: flex;
   align-items: center;
 }
 
 .avatar-container {
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.avatar-container:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
 }
 
 .user-avatar {
   background-color: #1890ff;
   cursor: pointer;
+}
+
+.fast-btn {
+  background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.advanced-btn {
+  background-color: transparent;
+  color: #666;
+}
+
+.login-btn {
+  background-color: transparent;
+  color: #2196f3;
+  border-color: #2196f3;
+}
+
+.upgrade-btn {
+  background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.mr-2 {
+  margin-right: 8px;
 }
 
 /* Dropdown Menu */
@@ -73,12 +116,22 @@
 }
 
 /* Responsive */
+@media (max-width: 992px) {
+  .main-navigation {
+    flex: none;
+  }
+
+  .header-tabs .tab-text {
+    display: none;
+  }
+}
+
 @media (max-width: 576px) {
   .header-container {
-    padding: 0 16px;
+    padding: 0 10px;
   }
 
   .logo-text {
-    font-size: 16px;
+    display: none;
   }
 }

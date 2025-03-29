@@ -28,6 +28,7 @@ const Settings = () => {
 
   useEffect(() => {
     fetchConfig();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Add a debugging effect to log form values when they change
