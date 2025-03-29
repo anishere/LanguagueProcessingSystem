@@ -8,12 +8,14 @@ import {
   SettingOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  HistoryOutlined
+  HistoryOutlined,
+  FundOutlined
 } from '@ant-design/icons';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import UserManagement from './UserManagement';
 import AdminDashboard from './Dashboard';
 import CreditHistory from './CreditHistory';
+import RevenueHistory from './RevenueHistory';
 import Settings from './Settings';  // Import component Settings mới
 import './Admin.css';
 
@@ -42,6 +44,7 @@ const Admin = ({ onLogout }) => {
     if (path === '/admin') return ['dashboard'];
     if (path.includes('/admin/users')) return ['users'];
     if (path.includes('/admin/credits/history')) return ['credits-history'];
+    if (path.includes('/admin/revenue')) return ['revenue'];
     if (path.includes('/admin/settings')) return ['settings'];
     return ['dashboard'];
   };
@@ -86,6 +89,11 @@ const Admin = ({ onLogout }) => {
               key: 'credits-history',
               icon: <HistoryOutlined />,
               label: <Link to="/admin/credits/history">Lịch sử Credits</Link>,
+            },
+            {
+              key: 'revenue',
+              icon: <FundOutlined />,
+              label: <Link to="/admin/revenue">Thống kê doanh thu</Link>,
             },
             {
               key: 'settings',
@@ -148,7 +156,9 @@ const Admin = ({ onLogout }) => {
                     ? 'Quản lý tài khoản' 
                     : (location.pathname.includes('/credits/history') 
                       ? 'Lịch sử Credits'
-                      : (location.pathname.includes('/settings') ? 'Cài đặt' : 'Dashboard'))
+                      : (location.pathname.includes('/revenue')
+                        ? 'Thống kê doanh thu'
+                        : (location.pathname.includes('/settings') ? 'Cài đặt' : 'Dashboard')))
                 },
               ]}
             />
@@ -159,6 +169,7 @@ const Admin = ({ onLogout }) => {
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/users" element={<UserManagement />} />
               <Route path="/credits/history" element={<CreditHistory />} />
+              <Route path="/revenue" element={<RevenueHistory />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>

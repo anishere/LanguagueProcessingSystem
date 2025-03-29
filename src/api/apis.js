@@ -781,3 +781,46 @@ export const updateConfig = async (configData) => {
     };
   }
 };
+
+// Lấy lịch sử doanh thu (tất cả giao dịch nạp tiền)
+export const getRevenueHistory = async (skip = 0, limit = 100, sortByDate = 'desc', startDate = null, endDate = null) => {
+  try {
+    // Xây dựng tham số query
+    let queryParams = `skip=${skip}&limit=${limit}&sort_by_date=${sortByDate}`;
+    
+    // Thêm tham số ngày nếu có
+    if (startDate) {
+      queryParams += `&start_date=${startDate}`;
+    }
+    if (endDate) {
+      queryParams += `&end_date=${endDate}`;
+    }
+    
+    const response = await axiosInstance.get(
+      `/history/credit/revenue?${queryParams}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "accept": "application/json"
+        }
+      }
+    );
+    
+    return {
+      success: true,
+      data: response,
+      items: response.items || [],
+      total: response.total || 0,
+      totalRevenue: response.total_revenue || 0
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy lịch sử doanh thu:", error);
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Lấy lịch sử doanh thu thất bại",
+      items: [],
+      total: 0,
+      totalRevenue: 0
+    };
+  }
+};
