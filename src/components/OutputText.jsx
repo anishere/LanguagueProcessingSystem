@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { HiOutlineSpeakerWave, HiOutlineStopCircle } from "react-icons/hi2";
-import { FiCopy, FiDownload } from "react-icons/fi"; // ✅ Thêm icons
+import { FiCopy } from "react-icons/fi";
 import useTextToSpeech from "../hooks/useTextToSpeech";
 import LoadingOverlay from "./LoadingOverlay";
 import { useEffect } from "react";
@@ -12,8 +12,6 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
     stopSpeaking, 
     isSpeaking, 
     isCallTTS,
-    canDownload,
-    downloadAudio,
     resetAudioState
   } = useTextToSpeech();
 
@@ -47,22 +45,9 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
       });
   };
 
-  // ✅ Hàm xử lý tải xuống audio
-  const handleDownloadAudio = () => {
-    if (!canDownload) return;
-    
-    // Tạo tên file từ 20 ký tự đầu tiên của văn bản
-    const fileName = outputText
-      .substring(0, 20)
-      .trim()
-      .replace(/[^a-zA-Z0-9_-]/g, "_");
-      
-    downloadAudio(fileName || "audio");
-  };
-
   return (
     <>
-      {isCallTTS && <LoadingOverlay />}
+      {(isCallTTS || isSpeaking) && <LoadingOverlay />}
       <div
         ref={outputRef}
         className="border output-text position-relative"
@@ -82,19 +67,6 @@ const OutputText = ({ outputText, isLoading, outputRef, targetLang }) => {
           {/* Icons container - chỉ hiển thị khi có outputText */}
           {outputText && (
             <div className="position-absolute bottom-0 end-0 p-2 d-flex gap-2">
-              {/* ✅ Icon download audio - chỉ hiển thị khi đã phát xong âm thanh */}
-              {canDownload && (
-                <i
-                  className="icon-action"
-                  onClick={handleDownloadAudio}
-                  title="📥 Tải xuống âm thanh"
-                  style={{ cursor: "pointer", fontSize: "1.2rem" }}
-                >
-                  <FiDownload />
-                </i>
-              )}
-              
-              {/* ✅ Icon copy text */}
               <i
                 className="icon-action"
                 onClick={handleCopyText}

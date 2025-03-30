@@ -151,7 +151,23 @@ const useSpeechToText = (setInputText) => {
         try {
           const result = await speechToText(audioBlob);
           console.log("✅ Kết quả Speech-to-Text:", result);
-          setInputText((prev) => prev + " " + result.transcript);
+          
+          // Làm sạch văn bản trước khi đặt vào input
+          let cleanTranscript = result.transcript || "";
+          
+          // Loại bỏ ký tự đặc biệt và chuẩn hóa khoảng trắng
+          cleanTranscript = cleanTranscript.trim()
+            .replace(/[^\S\r\n]+/g, ' ') // Thay thế nhiều khoảng trắng bằng một khoảng trắng
+            .replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, ''); // Chỉ giữ lại chữ cái, số, dấu câu và khoảng trắng
+          
+          console.log("🧹 Văn bản sau khi làm sạch:", cleanTranscript);
+          
+          // Cập nhật input text với văn bản đã làm sạch
+          setInputText((prev) => {
+            const newText = prev ? `${prev.trim()} ${cleanTranscript}` : cleanTranscript;
+            return newText;
+          });
+          
           setDetectVoice(result.detected_language);
         } catch (error) {
           console.error("❌ Speech-to-text thất bại:", error);

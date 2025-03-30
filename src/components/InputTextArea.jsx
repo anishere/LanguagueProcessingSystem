@@ -1,13 +1,13 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import PropTypes from "prop-types";
-import { FiDelete, FiDownload, FiCopy } from "react-icons/fi"; // Thêm FiCopy
+import { FiDelete, FiCopy } from "react-icons/fi";
 import { PiMicrophoneLight } from "react-icons/pi";
 import { FaRegCirclePause } from "react-icons/fa6";
 import { HiOutlineSpeakerWave, HiOutlineStopCircle } from "react-icons/hi2";
 import useAnalyzeAndSpeech from "../hooks/useAnalyzeAndSpeech";
 import LoadingOverlay from "./LoadingOverlay";
-import { toast, Bounce } from "react-toastify"; // Thêm toast để thông báo copy thành công
+import { toast, Bounce } from "react-toastify";
 
 // ✅ Sử dụng forwardRef để có thể truy cập methods từ component cha
 const InputTextArea = forwardRef(({
@@ -27,9 +27,7 @@ const InputTextArea = forwardRef(({
     stopSpeaking, 
     isSpeaking, 
     currentLang,
-    downloadableAudio,
     clearDownloadableAudio,
-    canShowDownload,
     hasAudio
   } = useAnalyzeAndSpeech(inputText); // ✅ Truyền inputText vào hook để theo dõi thay đổi 
 
@@ -48,18 +46,6 @@ const InputTextArea = forwardRef(({
       outputRef.current.style.height = `calc(${newHeight} + 33px)`;
     }
   }, [inputText, outputRef]);
-
-  // ✅ Hàm xử lý tải xuống file audio
-  const handleDownload = () => {
-    if (downloadableAudio) {
-      const downloadLink = document.createElement("a");
-      downloadLink.href = downloadableAudio.url;
-      downloadLink.download = downloadableAudio.filename;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
-  };
 
   // ✅ Mở rộng hàm handleClear để đồng thời xóa file audio
   const combinedClear = () => {
@@ -104,7 +90,7 @@ const InputTextArea = forwardRef(({
 
   return (
   <>
-    {(isAnalyze) && <LoadingOverlay />}
+    {(isAnalyze || isSpeaking) && <LoadingOverlay />}
     <div className="col-md-6 p-1 position-relative">
       {isAnalyze && <LoadingOverlay />}
       {detectVoice && <span className="mx-2 voiceDetected">Voice Detected: <b>{detectVoice}</b></span>}
@@ -135,16 +121,6 @@ const InputTextArea = forwardRef(({
         {isSpeaking ? <HiOutlineStopCircle /> : <HiOutlineSpeakerWave />}
       </i>
       }
-      {/* Chỉ hiển thị nút tải xuống khi có audio và được phép hiển thị */}
-      {downloadableAudio && canShowDownload && (
-        <i
-          className="position-absolute icon-downloadAudio"
-          onClick={handleDownload}
-          title="Tải xuống file audio"
-        >
-          <FiDownload />
-        </i>
-      )}
       {/* Thêm mới: Icon sao chép văn bản - chỉ hiển thị khi có văn bản */}
       {inputText && (
         <i

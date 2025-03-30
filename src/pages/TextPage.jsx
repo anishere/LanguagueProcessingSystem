@@ -12,7 +12,8 @@ import TranslationHistorySidebar from "../components/TranslationHistorySidebar";
 import LanguageSelector from "../components/LanguageSelector";
 import languages from "../settings/languagesCode";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { ClearOutlined, SwapOutlined, AudioOutlined, SoundOutlined, CopyOutlined } from '@ant-design/icons';
+import { ClearOutlined, SwapOutlined, AudioOutlined, SoundOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
 
 const { TextArea } = Input;
 
@@ -40,7 +41,9 @@ const TextPage = () => {
       stopSpeaking: stopInputSpeech, 
       clearDownloadableAudio,
       isSpeaking: isInputSpeaking,
-      currentLang // Add the currentLang to display which language is being spoken
+      currentLang, // Add the currentLang to display which language is being spoken
+      downloadableAudio, // Add this to access downloadable audio
+      isAnalyze // Thêm trạng thái isAnalyze
     } = useAnalyzeAndSpeech();
     
     // Correct hook for output text speech functionality
@@ -48,7 +51,10 @@ const TextPage = () => {
       playTextToSpeech,
       stopSpeaking: stopOutputSpeech,
       isSpeaking: isOutputSpeaking,
-      resetAudioState
+      resetAudioState,
+      downloadAudio,  // Add this to access download functionality
+      canDownload,    // Add this to check if audio can be downloaded
+      isCallTTS       // Thêm trạng thái isCallTTS
     } = useTextToSpeech();
     
     // Reset audio state when output text changes
@@ -158,9 +164,51 @@ const TextPage = () => {
       }
     };
 
+    // Handler for input audio download
+    const handleInputAudioDownload = () => {
+      if (!downloadableAudio) {
+        toast.info("Vui lòng phát âm thanh trước khi tải xuống", {
+          position: "top-right",
+          autoClose: 2000
+        });
+        return;
+      }
+      
+      const downloadLink = document.createElement("a");
+      downloadLink.href = downloadableAudio.url;
+      downloadLink.download = downloadableAudio.filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      toast.success("Đã tải xuống âm thanh thành công", {
+        position: "top-right",
+        autoClose: 2000
+      });
+    };
+    
+    // Handler for output audio download
+    const handleOutputAudioDownload = () => {
+      if (!canDownload) {
+        toast.info("Vui lòng phát âm thanh trước khi tải xuống", {
+          position: "top-right",
+          autoClose: 2000
+        });
+        return;
+      }
+      
+      const fileName = outputText.substring(0, 20).trim().replace(/[^a-zA-Z0-9_-]/g, "_") || "audio";
+      downloadAudio(fileName);
+      
+      toast.success("Đã tải xuống âm thanh thành công", {
+        position: "top-right",
+        autoClose: 2000
+      });
+    };
+
   return (
     <div className="translation-container">
-      {(isLoading || isLoadingRecord || isAnalyzing) && <LoadingOverlay />}
+      {(isLoading || isLoadingRecord || isAnalyzing || isAnalyze || isCallTTS) && <LoadingOverlay />}
       
       {showHistory && (
         <TranslationHistorySidebar 
@@ -221,6 +269,8 @@ const TextPage = () => {
                     onClick={handleClear}
                     type="text"
                     title="Xóa văn bản"
+                    disabled={!inputText}
+                    style={{ color: inputText ? 'inherit' : 'rgba(0,0,0,.25)' }}
                   />
                   <Button 
                     icon={<AudioOutlined />}
@@ -235,6 +285,8 @@ const TextPage = () => {
                     type="text"
                     className={isInputSpeaking ? 'speaking' : ''}
                     title={isInputSpeaking ? "Dừng phát âm" : "Phát âm văn bản"}
+                    disabled={!inputText && !isInputSpeaking}
+                    style={{ color: isInputSpeaking ? '#1890ff' : (inputText ? 'inherit' : 'rgba(0,0,0,.25)') }}
                   />
                   <Button 
                     icon={<CopyOutlined />}
@@ -242,6 +294,19 @@ const TextPage = () => {
                     type="text"
                     className={copyInputSuccess ? 'copy-success' : ''}
                     title="Sao chép văn bản"
+                    disabled={!inputText}
+                    style={{ color: inputText ? (copyInputSuccess ? '#52c41a' : 'inherit') : 'rgba(0,0,0,.25)' }}
+                  />
+                  <Button 
+                    icon={<DownloadOutlined />}
+                    onClick={handleInputAudioDownload}
+                    type="text"
+                    title="Tải xuống file audio"
+                    disabled={!downloadableAudio}
+                    style={{ 
+                      color: downloadableAudio ? '#1890ff' : 'rgba(0,0,0,.25)',
+                      display: inputText ? 'inline-flex' : 'none'
+                    }}
                   />
                 </div>
                 <span className="char-count">{inputText.length} / 5000</span>
@@ -267,6 +332,8 @@ const TextPage = () => {
                     type="text"
                     className={isOutputSpeaking ? 'speaking' : ''}
                     title={isOutputSpeaking ? "Dừng phát âm" : "Phát âm văn bản"}
+                    disabled={!outputText && !isOutputSpeaking}
+                    style={{ color: isOutputSpeaking ? '#1890ff' : (outputText ? 'inherit' : 'rgba(0,0,0,.25)') }}
                   />
                   <Button 
                     icon={<CopyOutlined />}
@@ -274,6 +341,19 @@ const TextPage = () => {
                     type="text"
                     className={copyOutputSuccess ? 'copy-success' : ''}
                     title="Sao chép văn bản"
+                    disabled={!outputText}
+                    style={{ color: outputText ? (copyOutputSuccess ? '#52c41a' : 'inherit') : 'rgba(0,0,0,.25)' }}
+                  />
+                  <Button 
+                    icon={<DownloadOutlined />}
+                    onClick={handleOutputAudioDownload}
+                    type="text"
+                    title="Tải xuống file audio"
+                    disabled={!canDownload}
+                    style={{ 
+                      color: canDownload ? '#1890ff' : 'rgba(0,0,0,.25)',
+                      display: outputText ? 'inline-flex' : 'none'
+                    }}
                   />
                 </div>
               </div>
