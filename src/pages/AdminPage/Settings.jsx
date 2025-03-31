@@ -78,11 +78,47 @@ const Settings = () => {
     });
   };
 
-  const handleSaveConfig = async (values) => {
+  const handleSaveConfig = async () => {
     setSaving(true);
     try {
-      // Chuẩn bị dữ liệu để gửi - không bao gồm ID vì API có thể không cần
-      const dataToSubmit = { ...values };
+      // Chỉ kiểm tra các trường thuộc tab hiện tại
+      const fieldsToValidate = activeTab === 'basic' 
+        ? ['name_web', 'address_web', 'price'] 
+        : ['name_owner', 'phone_1'];
+      
+      // Kiểm tra tính hợp lệ của các trường trong tab hiện tại
+      await form.validateFields(fieldsToValidate);
+      
+      // Lấy tất cả giá trị hiện tại của form
+      const allValues = form.getFieldsValue();
+      
+      // Chuẩn bị dữ liệu để gửi - Kết hợp giữa giá trị hiện tại của tab đang mở
+      // và giá trị đã lưu trước đó từ config cho tab khác
+      let dataToSubmit = {};
+      
+      if (activeTab === 'basic') {
+        // Nếu đang ở tab basic, chỉ cập nhật các trường thuộc tab basic
+        // và giữ nguyên các trường từ tab contact từ dữ liệu cũ
+        dataToSubmit = {
+          ...config, // Giữ lại tất cả giá trị cũ
+          name_web: allValues.name_web,
+          address_web: allValues.address_web,
+          price: allValues.price,
+          api_key: allValues.api_key
+        };
+      } else {
+        // Nếu đang ở tab contact, chỉ cập nhật các trường thuộc tab contact
+        // và giữ nguyên các trường từ tab basic từ dữ liệu cũ
+        dataToSubmit = {
+          ...config, // Giữ lại tất cả giá trị cũ
+          name_owner: allValues.name_owner,
+          phone_1: allValues.phone_1,
+          phone_2: allValues.phone_2,
+          email: allValues.email,
+          address: allValues.address,
+          google_map_link: allValues.google_map_link
+        };
+      }
       
       // Loại bỏ những trường không cần thiết
       delete dataToSubmit.id; // ID sẽ được xác định phía server
@@ -114,7 +150,11 @@ const Settings = () => {
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật cấu hình:', error);
-      message.error('Đã xảy ra lỗi khi cập nhật cấu hình');
+      if (error.errorFields) {
+        message.error('Vui lòng điền đầy đủ thông tin trong tab hiện tại');
+      } else {
+        message.error('Đã xảy ra lỗi khi cập nhật cấu hình');
+      }
     } finally {
       setSaving(false);
     }
@@ -275,7 +315,6 @@ const Settings = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleSaveConfig}
           initialValues={config || {}}
           className="settings-form"
         >
@@ -289,7 +328,7 @@ const Settings = () => {
             <Space>
               <Button 
                 type="primary" 
-                htmlType="submit" 
+                onClick={handleSaveConfig} 
                 loading={saving}
                 icon={<SaveOutlined />}
               >
