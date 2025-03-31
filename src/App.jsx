@@ -180,7 +180,7 @@ function App() {
             <Route path="/file" element={<FilePage />} />
             <Route path="/web" element={<WebPage />} />
             <Route path="/test" element={<Test />} />
-            {/* Đã loại bỏ route /profile khỏi đây */}
+            
             {/* Redirect từ /admin vào trang chính nếu không có quyền admin */}
             <Route path="/admin/*" element={isAdmin ? <Navigate to="/admin" /> : <Navigate to="/text" />} />
           </Routes>

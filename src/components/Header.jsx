@@ -80,7 +80,7 @@ const Header = ({ onLogout }) => {
       </Menu.Item>
       <Menu.Item key="credits" icon={<WalletOutlined />}>
         <Link to='/payment' strong>
-          {userInfo?.credits !== undefined ? `${userInfo.credits} credits/day` : 'Not found'}
+        {userInfo?.credits !== undefined ? Number(userInfo.credits).toLocaleString('vi-VN') : 'Not found'}
         </Link>
       </Menu.Item>
       <Divider style={{ margin: '4px 0' }} />
@@ -105,10 +105,9 @@ const Header = ({ onLogout }) => {
           <Link to="/" className="logo-link">
             <img 
               src={logo || "https://cdn-icons-png.flaticon.com/512/5968/5968764.png"} 
-              alt="OpenL" 
+              alt="An" 
               className="logo-image" 
             />
-            <span className="logo-text">OpenL</span>
           </Link>
           
           <div className="main-navigation">

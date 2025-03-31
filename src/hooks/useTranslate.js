@@ -1,11 +1,11 @@
 // hooks/useTranslate.js
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   translateText, 
   saveTranslationHistory, 
   getCurrentUser,
   subtractUserCredits,
-  saveCreditHistory // ✅ Thêm import hàm saveCreditHistory
+  saveCreditHistory
 } from "../api/apis";
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
@@ -20,6 +20,15 @@ const useTranslate = () => {
   const [targetLangFull, setTargetLangFull] = useState("vietnamese");
   const [sourceLang, setSourceLang] = useState("auto");
   const [sourceLangFull, setSourceLangFull] = useState("auto");
+  const [translationStyle, setTranslationStyle] = useState("General");
+  const [styleHistory, setStyleHistory] = useState({});
+  
+  // Lưu trữ thông tin dịch gần nhất để tránh dịch lại khi không có thay đổi
+  const lastTranslation = useRef({
+    inputText: "",
+    targetLangFull: "",
+    translationStyle: ""
+  });
 
   const dispatch = useDispatch();
 
@@ -44,6 +53,23 @@ const useTranslate = () => {
         transition: Bounce,
       });
       return "";
+    }
+    
+    // Kiểm tra xem có thay đổi gì so với lần dịch trước không
+    const isSameTranslation = 
+      inputText === lastTranslation.current.inputText &&
+      targetLangFull === lastTranslation.current.targetLangFull &&
+      translationStyle === lastTranslation.current.translationStyle;
+    
+    if (isSameTranslation && outputText) {
+      toast.info('Không có thay đổi gì để dịch lại', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        theme: "light",
+        transition: Bounce
+      });
+      return outputText;
     }
     
     try {
@@ -97,31 +123,54 @@ const useTranslate = () => {
           return "";
         }
         
-        // ✅ THÊM: Lưu lịch sử giao dịch credits sau khi trừ credits thành công
+        // Lưu lịch sử giao dịch credits sau khi trừ credits thành công
         try {
           const historyResult = await saveCreditHistory(
             user.user_id,
             wordCount,
             "subtract",
-            "translate" // Chỉ rõ là dùng cho tính năng dịch
+            "translate" 
           );
           
           if (!historyResult.success) {
             console.warn("⚠️ Lưu lịch sử giao dịch không thành công:", historyResult.error);
-            // Không return ở đây để không ảnh hưởng đến quá trình dịch
           } else {
             console.log("✅ Đã lưu lịch sử giao dịch credits thành công");
           }
         } catch (creditHistoryError) {
           console.error("Lỗi khi lưu lịch sử giao dịch credits:", creditHistoryError);
-          // Không return ở đây để không ảnh hưởng đến quá trình dịch
         }
       }
       
       // Thực hiện dịch
       setIsLoading(true);
-      const result = await translateText(inputText, targetLangFull);
+      
+      // Log trước khi dịch để đánh giá
+      console.log(`Đang dịch với phong cách: ${translationStyle}`);
+      console.log(`Văn bản đầu vào: "${inputText}"`);
+      
+      const result = await translateText(inputText, targetLangFull, translationStyle);
       setOutputText(result);
+      
+      // Cập nhật thông tin lần dịch gần nhất
+      lastTranslation.current = {
+        inputText,
+        targetLangFull,
+        translationStyle
+      };
+      
+      // Log kết quả để đánh giá
+      console.log(`Kết quả dịch: "${result}"`);
+      
+      // Cập nhật style history khi dịch thành công
+      setStyleHistory(prev => ({
+        ...prev,
+        [translationStyle]: {
+          input: inputText,
+          output: result,
+          timestamp: new Date().toISOString()
+        }
+      }));
       
       // Lưu lịch sử dịch thuật
       if (user?.user_id) {
@@ -149,6 +198,20 @@ const useTranslate = () => {
     }
   };
 
+  // Hàm lấy lịch sử dịch theo phong cách
+  const getStyleTranslationHistory = () => {
+    return styleHistory;
+  };
+
+  // Hàm xóa lịch sử style khi thay đổi văn bản đầu vào
+  useEffect(() => {
+    // Khi người dùng thay đổi văn bản đầu vào, xóa lịch sử style
+    // để tránh so sánh giữa các văn bản khác nhau
+    if (Object.keys(styleHistory).length > 0) {
+      setStyleHistory({});
+    }
+  }, [inputText]);
+
   return {
     inputText,
     setInputText,
@@ -163,7 +226,11 @@ const useTranslate = () => {
     sourceLang,
     setSourceLang,
     sourceLangFull,
-    setSourceLangFull
+    setSourceLangFull,
+    translationStyle,
+    setTranslationStyle,
+    styleHistory,
+    getStyleTranslationHistory
   };
 };
 

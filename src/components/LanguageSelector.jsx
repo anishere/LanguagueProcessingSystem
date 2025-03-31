@@ -1,91 +1,88 @@
 import { useState, useEffect } from "react";
-import { Select, Input, Checkbox, Divider } from "antd";
+import { Select, Input, Divider, Tooltip } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import languages from "../settings/languagesCode";
-import PropTypes from "prop-types";
 import "./LanguageSelector.css";
 
 const { Option } = Select;
 
-const LanguageSelector = ({ targetLang = 'vi', setTargetLang, setTargetLangFull }) => {
+/**
+ * Language selector component that allows selecting a target language for translation.
+ */
+const LanguageSelector = ({ targetLang, setTargetLang, setTargetLangFull }) => {
   const [searchText, setSearchText] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState(languages);
-  
-  // Lọc ngôn ngữ dựa trên từ khóa tìm kiếm
+  const [filteredLanguages, setFilteredLanguages] = useState(languages);
+
+  // Update filtered languages when search text changes
   useEffect(() => {
-    if (searchText) {
-      setFilteredOptions(
-        languages.filter(lang => 
-          lang.name.toLowerCase().includes(searchText.toLowerCase())
-        )
-      );
+    if (!searchText) {
+      setFilteredLanguages(languages);
     } else {
-      setFilteredOptions(languages);
+      const filtered = languages.filter(lang =>
+        lang.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        lang.code.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredLanguages(filtered);
     }
   }, [searchText]);
-  
-  // Xử lý khi chọn ngôn ngữ
-  const handleChange = (value, option) => {
+
+  // Handler for language change
+  const handleChange = (value) => {
     setTargetLang(value);
-    setTargetLangFull(option.children);
+    // Find and set the full language name
+    const selectedLang = languages.find((lang) => lang.code === value);
+    if (selectedLang) {
+      setTargetLangFull(selectedLang.name);
+    }
   };
 
-  // Tùy chỉnh dropdown với layout lưới 6 cột
-  const dropdownRender = () => (
-    <div className="language-dropdown-container">
-      <div className="custom-dropdown-search">
+  // Custom dropdown render with search
+  const dropdownRender = menu => (
+    <div className="custom-dropdown-render">
+      <div className="language-search-container">
         <Input
-          placeholder="Tìm kiếm ngôn ngữ"
-          prefix={<SearchOutlined />}
+          placeholder="Tìm kiếm ngôn ngữ..."
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          onKeyDown={(e) => e.stopPropagation()}
-          autoFocus
+          onChange={e => setSearchText(e.target.value)}
+          prefix={<SearchOutlined />}
+          allowClear
         />
       </div>
       <Divider style={{ margin: '4px 0' }} />
-      <div className="custom-dropdown-menu">
-        <div className="language-grid">
-          {filteredOptions.map(lang => (
-            <div 
-              key={lang.code}
-              className={`language-grid-item ${targetLang === lang.code ? 'selected' : ''}`}
-              onClick={() => handleChange(lang.code, { children: lang.name })}
-            >
-              <Checkbox checked={targetLang === lang.code} />
+      <div className="language-grid">
+        {filteredLanguages.map(lang => (
+          <div
+            key={lang.code}
+            className={`language-grid-item ${targetLang === lang.code ? 'selected' : ''}`}
+            onClick={() => handleChange(lang.code)}
+          >
+            <Tooltip title={`${lang.name} (${lang.code})`}>
               <span className="language-item-text">{lang.name}</span>
-            </div>
-          ))}
-        </div>
+            </Tooltip>
+          </div>
+        ))}
       </div>
     </div>
   );
-  
+
   return (
-    <div className="selectorCus">
+    <div className="language-selector-container">
       <Select
-      className="ant-custom-language-selector"
-      value={targetLang}
-      onChange={handleChange}
-      dropdownMatchSelectWidth={false}
-      dropdownClassName="custom-language-dropdown"
-      dropdownRender={dropdownRender}
-      optionFilterProp="children"
+        value={targetLang}
+        onChange={handleChange}
+        className="language-select"
+        placeholder="Chọn ngôn ngữ"
+        dropdownMatchSelectWidth={false}
+        dropdownRender={dropdownRender}
       >
-      {languages.map(lang => (
-        <Option key={lang.code} value={lang.code}>
-          {lang.name}
-        </Option>
-      ))}
+        {languages.map((lang) => (
+          <Option key={lang.code} value={lang.code}>
+            <span className="language-option">{lang.name}</span>
+          </Option>
+        ))}
       </Select>
     </div>
   );
-};
-
-LanguageSelector.propTypes = {
-  targetLang: PropTypes.string.isRequired,
-  setTargetLang: PropTypes.func.isRequired,
-  setTargetLangFull: PropTypes.func.isRequired,
 };
 
 export default LanguageSelector;

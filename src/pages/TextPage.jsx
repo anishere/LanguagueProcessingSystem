@@ -1,7 +1,7 @@
 // pages/TextPage.jsx
 import { useRef, useState, useEffect } from "react";
 import "../App.css";
-import { Card, Button, Input, Row, Col, Divider, Badge } from 'antd';
+import { Card, Button, Input, Row, Col, Divider, Badge, Modal, Table, Typography } from 'antd';
 import useTranslate from "../hooks/useTranslate"; 
 import useSpeechToText from "../hooks/useSpeechToText"; 
 import useAnalyze from "../hooks/useAnalyze";
@@ -10,12 +10,15 @@ import useAnalyzeAndSpeech from "../hooks/useAnalyzeAndSpeech";
 import useTextToSpeech from "../hooks/useTextToSpeech";
 import TranslationHistorySidebar from "../components/TranslationHistorySidebar";
 import LanguageSelector from "../components/LanguageSelector";
+import StyleSelector from "../components/StyleSelector";
 import languages from "../settings/languagesCode";
+import translationStyles from "../settings/translationStyles";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { ClearOutlined, SwapOutlined, AudioOutlined, SoundOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icons';
+import { ClearOutlined, SwapOutlined, AudioOutlined, SoundOutlined, CopyOutlined, DownloadOutlined, DiffOutlined } from '@ant-design/icons';
 import { toast } from 'react-toastify';
 
 const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 const TextPage = () => {
     const {
@@ -29,6 +32,9 @@ const TextPage = () => {
         handleTranslate,
         setTargetLangFull,
         setSourceLangFull,
+        translationStyle,
+        setTranslationStyle,
+        styleHistory,
     } = useTranslate();
     
     const {isRecording, startRecording, stopRecording, isLoading: isLoadingRecord} = useSpeechToText(setInputText);
@@ -73,6 +79,48 @@ const TextPage = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [copyInputSuccess, setCopyInputSuccess] = useState(false);
     const [copyOutputSuccess, setCopyOutputSuccess] = useState(false);
+    const [showStyleComparison, setShowStyleComparison] = useState(false);
+    const [showComparisonModal, setShowComparisonModal] = useState(false);
+    
+    // Xử lý dữ liệu cho modal so sánh phong cách
+    const getComparisonData = () => {
+      const data = [];
+      
+      Object.entries(styleHistory).forEach(([style, info], index) => {
+        const styleLabel = translationStyles.find(s => s.value === style)?.label || style;
+        
+        data.push({
+          key: index,
+          style: styleLabel,
+          output: info.output,
+          timestamp: new Date(info.timestamp).toLocaleString(),
+        });
+      });
+      
+      return data;
+    };
+    
+    // Columns cho bảng so sánh
+    const comparisonColumns = [
+      {
+        title: 'Phong cách',
+        dataIndex: 'style',
+        key: 'style',
+        width: '20%',
+      },
+      {
+        title: 'Kết quả dịch',
+        dataIndex: 'output',
+        key: 'output',
+        render: text => <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>,
+      },
+      {
+        title: 'Thời gian',
+        dataIndex: 'timestamp',
+        key: 'timestamp',
+        width: '20%',
+      },
+    ];
     
     // Hàm xử lý khi chọn một lịch sử dịch từ sidebar
     const handleSelectTranslation = (translation) => {
@@ -220,10 +268,10 @@ const TextPage = () => {
       <Card className="translation-card">
         <Row gutter={[16, 16]}>
           <Col span={24}>
-            <div className="language-controls">
-              <div className="language-select-container source-lang">
+            <div className="language-controls combined-row">
+              <div className="auto-detect-section">
                 <div className="auto-detect-text">
-                  <span>Tự động phát hiện ngôn ngữ</span>
+                  <span>Tự động phát hiện</span>
                 </div>
               </div>
               
@@ -238,15 +286,68 @@ const TextPage = () => {
                 />
               </div>
               
-              <div className="language-select-container target-lang">
-                <LanguageSelector
-                  targetLang={targetLang}
-                  setTargetLang={setTargetLang}
-                  setTargetLangFull={setTargetLangFull}
-                />
+              <div className="selectors-right-section">
+                <div className="selector-group">
+                  <LanguageSelector
+                    targetLang={targetLang}
+                    setTargetLang={setTargetLang}
+                    setTargetLangFull={setTargetLangFull}
+                  />
+                </div>
+                
+                <div className="selector-group style-wrapper">
+                  <span className="style-label">Phong cách:</span>
+                  <StyleSelector
+                    style={translationStyle}
+                    setStyle={setTranslationStyle}
+                  />
+                </div>
               </div>
             </div>
+            
+            <div className="style-info-container">
+              <Button 
+                type="link" 
+                size="small"
+                className="btn1"
+                onClick={() => setShowStyleComparison(!showStyleComparison)}
+              >
+                Hướng dẫn
+              </Button>
+              
+              {Object.keys(styleHistory).length > 1 && (
+                <Button 
+                  type="primary" 
+                  icon={<DiffOutlined />}
+                  size="small"
+                  onClick={() => setShowComparisonModal(true)}
+                  style={{ marginLeft: '10px' }}
+                >
+                  So sánh phong cách
+                </Button>
+              )}
+            </div>
           </Col>
+
+          {showStyleComparison && (
+            <Col span={24}>
+              <Card className="style-comparison-card">
+                <p>
+                  Để đánh giá hiệu quả của các phong cách dịch thuật khác nhau:
+                </p>
+                <ol>
+                  <li>Nhập văn bản cần dịch</li>
+                  <li>Dịch với phong cách hiện tại</li>
+                  <li>Thay đổi phong cách và dịch lại cùng văn bản</li>
+                  <li>So sánh kết quả dịch để thấy sự khác biệt giữa các phong cách</li>
+                </ol>
+                <p>
+                  <strong>Ví dụ:</strong> Văn bản y tế khi dịch với phong cách &quot;Y tế&quot; sẽ sử dụng thuật ngữ chuyên ngành y tế chính xác, 
+                  trong khi phong cách &quot;Phổ thông&quot; sẽ đơn giản hóa các thuật ngữ này.
+                </p>
+              </Card>
+            </Col>
+          )}
           
           <Col xs={24} md={12}>
             <div className="input-container">
@@ -368,7 +469,7 @@ const TextPage = () => {
                 disabled={!inputText || isLoading}
                 className="translate-button"
               >
-                Nộp
+                Dịch
               </Button>
               
               <Button
@@ -407,6 +508,41 @@ const TextPage = () => {
           </div>
         </Card>
       )}
+      
+      {/* Modal so sánh phong cách dịch */}
+      <Modal
+        title="So sánh kết quả dịch với các phong cách khác nhau"
+        open={showComparisonModal}
+        onCancel={() => setShowComparisonModal(false)}
+        width={900}
+        footer={[
+          <Button key="close" onClick={() => setShowComparisonModal(false)}>
+            Đóng
+          </Button>
+        ]}
+      >
+        <div style={{ marginBottom: '20px' }}>
+          <Title level={5}>Văn bản gốc:</Title>
+          <Text>{inputText}</Text>
+        </div>
+        
+        <Table 
+          dataSource={getComparisonData()}
+          columns={comparisonColumns}
+          pagination={false}
+          rowClassName={(record) => 
+            record.style === translationStyles.find(s => s.value === translationStyle)?.label 
+              ? 'current-style-row' 
+              : ''
+          }
+        />
+        
+        <div style={{ marginTop: '20px' }}>
+          <Text type="secondary">
+            * Dòng có nền màu xanh nhạt là phong cách hiện tại đang được sử dụng.
+          </Text>
+        </div>
+      </Modal>
     </div>
   );
 };
