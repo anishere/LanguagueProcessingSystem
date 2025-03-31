@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Input, Button, Space, Card, Typography, Select, DatePicker, Row, Col, Empty, Alert, message } from 'antd';
-import { SearchOutlined, ReloadOutlined, DollarOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, DollarOutlined, UserOutlined, ClearOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { getCreditHistory } from '../../../api/apis';
 import adminTheme from '../theme';
@@ -30,6 +30,10 @@ const CreditHistoryTable = ({ allUsers, onDataChanged, onUserSelected }) => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserId, pagination.current, pagination.pageSize]);
+
+  const clearHistory = () => {
+    setHistory([]);
+  }
 
   const fetchCreditHistory = async () => {
     if (!selectedUserId) {
@@ -300,6 +304,14 @@ const CreditHistoryTable = ({ allUsers, onDataChanged, onUserSelected }) => {
                 disabled={!selectedUserId}
               >
                 Làm mới
+              </Button>
+              <Button 
+                icon={<ClearOutlined />} 
+                onClick={clearHistory}
+                style={{ borderColor: adminTheme.primaryColor, color: adminTheme.primaryColor }}
+                disabled={history.length === 0}
+              >
+                Dọn
               </Button>
             </Space>
           </Col>

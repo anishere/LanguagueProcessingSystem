@@ -282,8 +282,9 @@ const CreditHistory = () => {
         </TabPane>
         <TabPane tab="Giao dịch theo người dùng" key="user">
           <CreditHistoryTable 
-            users={users} 
+            allUsers={users} 
             onUserSelected={handleUserSelected}
+            onDataChanged={() => fetchAllCreditTrend()}
           />
           {!selectedUserId && (
             <Alert
