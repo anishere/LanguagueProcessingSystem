@@ -1,41 +1,32 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Divider, message, Card, Row, Col, Select, DatePicker, Space, Button, Tabs, Spin, Alert, Radio } from 'antd';
-import { HistoryOutlined, LineChartOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Typography, message, Card, Row, Col, DatePicker, Space, Spin, Alert, Radio } from 'antd';
+import { LineChartOutlined } from '@ant-design/icons';
 import { getAllUsers, getAllCreditHistory } from '../../api/apis';
 import moment from 'moment';
 import './CreditHistory.css';
 import { 
-  AreaChart,
-  Area,
-  XAxis, 
-  YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
   ResponsiveContainer,
   LineChart,
-  Line
+  Line,
+  XAxis,
+  YAxis
 } from 'recharts';
 import adminTheme from './theme';
 import CreditHistoryAllTable from './components/CreditHistoryAllTable';
-import CreditHistoryTable from './components/CreditHistoryTable';
 
-const { Title, Text } = Typography;
-const { Option } = Select;
+const { Title } = Typography;
 const { RangePicker } = DatePicker;
-const { TabPane } = Tabs;
 
 const CreditHistory = () => {
-  const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(false);
   const [chartLoading, setChartLoading] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [selectedUserName, setSelectedUserName] = useState('');
   const [creditTrendData, setCreditTrendData] = useState([]);
   const [chartDateRange, setChartDateRange] = useState([moment().subtract(30, 'days'), moment()]);
-  const [dateRange, setDateRange] = useState([moment().subtract(30, 'days'), moment()]);
   const [transactionType, setTransactionType] = useState('all');
   const [error, setError] = useState(null);
 
@@ -44,15 +35,11 @@ const CreditHistory = () => {
     fetchUsers();
   }, []);
 
-  // Fetch chart data when date range, transaction type or user changes
+  // Fetch chart data when date range or transaction type changes
   useEffect(() => {
-    if (activeTab === 'user' && selectedUserId) {
-      fetchUserCreditTrend();
-    } else if (activeTab === 'all') {
-      fetchAllCreditTrend();
-    }
+    fetchAllCreditTrend();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUserId, chartDateRange, transactionType, activeTab]);
+  }, [chartDateRange, transactionType]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -87,26 +74,6 @@ const CreditHistory = () => {
       setError('Đã xảy ra lỗi khi lấy danh sách người dùng, đang sử dụng dữ liệu mẫu');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleUserSelected = useCallback((userId, userName) => {
-    setSelectedUserId(userId);
-    setSelectedUserName(userName || '');
-  }, []);
-
-  // Fetch credit trend data for a specific user
-  const fetchUserCreditTrend = async () => {
-    if (!selectedUserId) return;
-    
-    setChartLoading(true);
-    try {
-      // Thực hiện call API cho user cụ thể
-      // Xử lý dữ liệu để hiện thị biểu đồ
-      setChartLoading(false);
-    } catch (error) {
-      console.error('Error fetching user credit trend:', error);
-      setChartLoading(false);
     }
   };
 
@@ -163,14 +130,6 @@ const CreditHistory = () => {
     result.sort((a, b) => moment(a.date).diff(moment(b.date)));
     
     return result;
-  };
-
-  const handleTabChange = (key) => {
-    setActiveTab(key);
-    if (key === 'all') {
-      setSelectedUserId(null);
-      setSelectedUserName('');
-    }
   };
 
   const handleChartDateRangeChange = (dates) => {
@@ -242,12 +201,7 @@ const CreditHistory = () => {
         <Row gutter={[16, 16]} justify="space-between" align="middle">
           <Col xs={24} md={12}>
             <Title level={4}>
-              Biểu đồ xu hướng giao dịch
-              {activeTab === 'user' && selectedUserName && (
-                <span className="selected-user-label">
-                  - {selectedUserName}
-                </span>
-              )}
+              <LineChartOutlined style={{ color: adminTheme.primaryColor }} /> Biểu đồ xu hướng giao dịch
             </Title>
           </Col>
           <Col xs={24} md={12}>
@@ -255,12 +209,10 @@ const CreditHistory = () => {
               <RangePicker 
                 value={chartDateRange}
                 onChange={handleChartDateRangeChange}
-                disabled={activeTab === 'user' && !selectedUserId}
               />
               <Radio.Group 
                 value={transactionType} 
                 onChange={handleTransactionTypeChange}
-                disabled={activeTab === 'user' && !selectedUserId}
               >
                 <Radio.Button value="all">Tất cả</Radio.Button>
                 <Radio.Button value="purchase">Nạp tiền</Radio.Button>
@@ -273,30 +225,9 @@ const CreditHistory = () => {
         {renderChart()}
       </Card>
       
-      <Tabs activeKey={activeTab} onChange={handleTabChange} type="card" className="admin-tabs">
-        <TabPane tab="Tất cả giao dịch" key="all">
-          <CreditHistoryAllTable 
-            allUsers={users} 
-            onDataChanged={() => fetchAllCreditTrend()}
-          />
-        </TabPane>
-        <TabPane tab="Giao dịch theo người dùng" key="user">
-          <CreditHistoryTable 
-            allUsers={users} 
-            onUserSelected={handleUserSelected}
-            onDataChanged={() => fetchAllCreditTrend()}
-          />
-          {!selectedUserId && (
-            <Alert
-              message="Chọn người dùng"
-              description="Vui lòng chọn một người dùng từ danh sách để xem lịch sử giao dịch."
-              type="info"
-              showIcon
-              style={{ marginTop: 16 }}
-            />
-          )}
-        </TabPane>
-      </Tabs>
+      <CreditHistoryAllTable 
+        onDataChanged={() => fetchAllCreditTrend()}
+      />
     </div>
   );
 };

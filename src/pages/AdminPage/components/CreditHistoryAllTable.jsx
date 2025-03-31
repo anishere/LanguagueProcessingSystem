@@ -6,7 +6,6 @@ import { getAllCreditHistory } from '../../../api/apis';
 import adminTheme from '../theme';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const CreditHistoryAllTable = ({ onDataChanged }) => {
@@ -139,6 +138,20 @@ const CreditHistoryAllTable = ({ onDataChanged }) => {
     }));
     fetchAllCreditHistory();
   };
+  
+  // Reset tất cả bộ lọc
+  const handleResetFilters = () => {
+    setDateRange(null);
+    setTransactionType(null);
+    setSearchUsername('');
+    setPagination(prev => ({
+      ...prev,
+      current: 1
+    }));
+    
+    // Fetch lại dữ liệu sau khi reset
+    setTimeout(fetchAllCreditHistory, 0);
+  };
 
   // Cấu hình các cột cho bảng
   const columns = [
@@ -270,7 +283,7 @@ const CreditHistoryAllTable = ({ onDataChanged }) => {
         
         {/* Form tìm kiếm */}
         <Row gutter={[16, 16]} className="filter-row" style={{ marginTop: 16, marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={5}>
+          <Col xs={24} sm={12} md={6}>
             <Input
               placeholder="Tìm theo tên người dùng"
               value={searchUsername}
@@ -278,24 +291,27 @@ const CreditHistoryAllTable = ({ onDataChanged }) => {
               suffix={<SearchOutlined style={{ color: adminTheme.primaryColor }} />}
             />
           </Col>
-          <Col xs={24} sm={12} md={7}>
-            <RangePicker 
+          <Col xs={24} sm={12} md={6}>
+            <DatePicker.RangePicker
               style={{ width: '100%' }}
               onChange={handleDateRangeChange}
+              value={dateRange}
+              placeholder={['Từ ngày', 'Đến ngày']}
             />
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col xs={24} sm={12} md={6}>
             <Select
               placeholder="Loại giao dịch"
               style={{ width: '100%' }}
               onChange={handleTransactionTypeChange}
+              value={transactionType}
               allowClear
             >
               <Option value="purchase">Nạp tiền</Option>
               <Option value="usage">Sử dụng dịch vụ</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={12} md={7}>
+          <Col xs={24} sm={24} md={6}>
             <Space>
               <Button 
                 type="primary" 
@@ -306,11 +322,11 @@ const CreditHistoryAllTable = ({ onDataChanged }) => {
                 Lọc dữ liệu
               </Button>
               <Button 
-                onClick={fetchAllCreditHistory}
+                onClick={handleResetFilters}
                 icon={<ReloadOutlined />}
                 style={{ borderColor: adminTheme.primaryColor, color: adminTheme.primaryColor }}
               >
-                Làm mới
+                Đặt lại
               </Button>
             </Space>
           </Col>
