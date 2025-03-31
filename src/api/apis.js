@@ -866,10 +866,10 @@ export const getRevenueHistory = async (skip = 0, limit = 100, sortByDate = 'des
 };
 
 // Hàm lấy tất cả lịch sử giao dịch credits (không phụ thuộc vào user_id)
-export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'desc', startDate = null, endDate = null, transactionType = null) => {
+export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'desc', startDate = null, endDate = null, transactionType = null, username = null) => {
   try {
     // Xây dựng tham số query
-    let queryParams = `skip=${skip}&limit=${limit}&sort_order=${sortOrder}`;
+    let queryParams = `skip=${skip}&limit=${limit}&sort_by_date=${sortOrder}`;
     
     if (startDate) {
       queryParams += `&start_date=${startDate}`;
@@ -881,6 +881,10 @@ export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'des
     
     if (transactionType) {
       queryParams += `&transaction_type=${transactionType}`;
+    }
+    
+    if (username) {
+      queryParams += `&username=${encodeURIComponent(username)}`;
     }
     
     const response = await axiosInstance.get(

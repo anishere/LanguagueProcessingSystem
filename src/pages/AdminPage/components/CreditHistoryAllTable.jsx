@@ -50,19 +50,12 @@ const CreditHistoryAllTable = ({ onDataChanged }) => {
         'desc',
         startDate,
         endDate,
-        transactionType
+        transactionType,
+        searchUsername || null
       );
 
       if (result.success) {
-        // Lọc dữ liệu theo username nếu có
-        let filteredItems = result.items;
-        if (searchUsername) {
-          filteredItems = filteredItems.filter(item => 
-            item.username && item.username.toLowerCase().includes(searchUsername.toLowerCase())
-          );
-        }
-        
-        setHistory(filteredItems);
+        setHistory(result.items);
         setPagination(prev => ({
           ...prev,
           total: result.total
@@ -300,7 +293,6 @@ const CreditHistoryAllTable = ({ onDataChanged }) => {
             >
               <Option value="purchase">Nạp tiền</Option>
               <Option value="usage">Sử dụng dịch vụ</Option>
-              <Option value="subtract">Trừ tiền</Option>
             </Select>
           </Col>
           <Col xs={24} sm={12} md={7}>
