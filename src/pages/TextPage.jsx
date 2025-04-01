@@ -37,7 +37,7 @@ const TextPage = () => {
         styleHistory,
     } = useTranslate();
     
-    const {isRecording, startRecording, stopRecording, isLoading: isLoadingRecord} = useSpeechToText(setInputText);
+    const {isRecording, startRecording, stopRecording, isLoading: isLoadingRecord, detectVoice, setDetectVoice} = useSpeechToText(setInputText);
     
     const { setAnalysisResult, analysisResult, isAnalyzing, totalLength, languagePercentages } = useAnalyze();
 
@@ -72,7 +72,8 @@ const TextPage = () => {
       setInputText, 
       setOutputText, 
       setAnalysisResult, 
-      clearDownloadableAudio 
+      clearDownloadableAudio,
+      setDetectVoice
     });
     
     const outputRef = useRef(null);
@@ -361,6 +362,11 @@ const TextPage = () => {
               {isInputSpeaking && currentLang && (
                 <div className="current-speaking-language">
                   <Badge status="processing" text={`Đang đọc: ${currentLang}`} />
+                </div>
+              )}
+              {detectVoice && !isRecording && (
+                <div className="detected-voice-language">
+                  <Badge status="success" text={`Phát hiện giọng nói: ${detectVoice}`} />
                 </div>
               )}
               <div className="textarea-tools">
