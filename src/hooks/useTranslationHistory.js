@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getTranslationHistory, deleteTranslationHistory, deleteAllTranslationHistory } from "../api/apis";
 import { toast } from "react-toastify";
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 const useTranslationHistory = () => {
   const [history, setHistory] = useState([]);
@@ -9,16 +10,12 @@ const useTranslationHistory = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [limit, setLimit] = useState(100);
   
-  // Lấy thông tin người dùng từ localStorage
-  const getUserFromLocalStorage = () => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      return JSON.parse(userData);
-    }
-    return null;
+  // Lấy thông tin người dùng từ cookie
+  const getUserFromCookie = () => {
+    return getCookie(COOKIE_KEYS.USER);
   };
   
-  const user = getUserFromLocalStorage();
+  const user = getUserFromCookie();
   
   // Lấy lịch sử dịch thuật
   const fetchHistory = async () => {

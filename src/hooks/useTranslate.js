@@ -10,6 +10,7 @@ import {
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { toggleAction } from "../redux/actionSlice";
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 
 const useTranslate = () => {
@@ -76,13 +77,13 @@ const useTranslate = () => {
       // Đếm số từ
       const wordCount = countWords(inputText);
       
-      // Lấy userId từ localStorage
-      const userData = localStorage.getItem("user");
-      const user = userData ? JSON.parse(userData) : null;
+      // Lấy userId từ cookies
+      const userCookie = getCookie(COOKIE_KEYS.USER);
+      const userId = userCookie?.user_id;
       
       // Kiểm tra và lấy thông tin người dùng
-      if (user?.user_id) {
-        const userInfoResult = await getCurrentUser(user.user_id);
+      if (userId) {
+        const userInfoResult = await getCurrentUser(userId);
         
         // Kiểm tra lấy thông tin người dùng thành công
         if (!userInfoResult.success) {
@@ -110,7 +111,7 @@ const useTranslate = () => {
         }
 
         // Trừ credits
-        const creditsResult = await subtractUserCredits(user.user_id, wordCount);
+        const creditsResult = await subtractUserCredits(userId, wordCount);
         
         // Kiểm tra trừ credits thành công
         if (!creditsResult.success) {
@@ -126,7 +127,7 @@ const useTranslate = () => {
         // Lưu lịch sử giao dịch credits sau khi trừ credits thành công
         try {
           const historyResult = await saveCreditHistory(
-            user.user_id,
+            userId,
             wordCount,
             "subtract",
             "translate" 
@@ -173,10 +174,10 @@ const useTranslate = () => {
       }));
       
       // Lưu lịch sử dịch thuật
-      if (user?.user_id) {
+      if (userId) {
         try {
           await saveTranslationHistory(
-            user.user_id,
+            userId,
             inputText,
             result,
             sourceLangFull || "Auto",

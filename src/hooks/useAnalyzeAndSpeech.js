@@ -9,6 +9,7 @@ import {
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { toggleAction } from "../redux/actionSlice";
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 const useAnalyzeAndSpeech = (currentText) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -90,15 +91,15 @@ const useAnalyzeAndSpeech = (currentText) => {
       // Đếm số từ trong văn bản
       const wordCount = countWords(cleanedText);
       
-      // Lấy thông tin người dùng từ localStorage
-      const userData = localStorage.getItem("user");
-      const user = userData ? JSON.parse(userData) : null;
+      // Lấy thông tin người dùng từ cookies
+      const userCookie = getCookie(COOKIE_KEYS.USER);
+      const userId = userCookie?.user_id;
       
       // Chỉ trừ credits khi chưa xử lý văn bản này trước đó
       if (!creditAlreadyDeducted) {
         // Kiểm tra và lấy thông tin người dùng
-        if (user?.user_id) {
-          const userInfoResult = await getCurrentUser(user.user_id);
+        if (userId) {
+          const userInfoResult = await getCurrentUser(userId);
           
           // Kiểm tra lấy thông tin người dùng thành công
           if (!userInfoResult.success) {
@@ -126,7 +127,7 @@ const useAnalyzeAndSpeech = (currentText) => {
           }
 
           // Trừ credits
-          const creditsResult = await subtractUserCredits(user.user_id, wordCount);
+          const creditsResult = await subtractUserCredits(userId, wordCount);
           
           // Kiểm tra trừ credits thành công
           if (!creditsResult.success) {
@@ -144,7 +145,7 @@ const useAnalyzeAndSpeech = (currentText) => {
           // ✅ Lưu lịch sử giao dịch credits sau khi trừ credits thành công
           try {
             const historyResult = await saveCreditHistory(
-              user.user_id,
+              userId,
               wordCount,
               "subtract",
               "text-to-speech" // Chỉ rõ là dùng cho tính năng text-to-speech

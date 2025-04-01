@@ -6,6 +6,7 @@ import {
   subtractUserCredits, 
   saveCreditHistory 
 } from '../../../api/apis';
+import { getCookie, COOKIE_KEYS } from '../../../settings/cookies';
 
 const { Option } = Select;
 
@@ -20,8 +21,8 @@ const CreditsModal = ({
 }) => {
   const [form] = Form.useForm();
   
-  // Lấy thông tin người dùng hiện tại từ localStorage
-  const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+  // Lấy thông tin người dùng hiện tại từ cookies
+  const adminUser = getCookie(COOKIE_KEYS.USER) || {};
   
   // Cập nhật credits của người dùng
   const handleUpdateCredits = async (values) => {

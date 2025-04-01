@@ -8,6 +8,7 @@ import {
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux"; 
 import { toggleAction } from "../redux/actionSlice"; 
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 // ✅ Hàm loại bỏ ký tự đặc biệt & khoảng trắng
 const removeSpecialCharacters = (text) => {
@@ -34,6 +35,10 @@ const useAnalyze = () => {
     if (trimmedText === '') return 0;
     return trimmedText.split(/\s+/).length;
   };
+
+  // Lấy thông tin người dùng từ cookies
+  const userCookie = getCookie(COOKIE_KEYS.USER);
+  const userId = userCookie?.user_id;
 
   const handleAnalyze = async (text) => {
     if (!text.trim()) {
@@ -80,13 +85,9 @@ const useAnalyze = () => {
         // Đếm số từ trong văn bản
         const wordCount = countWords(text);
         
-        // Lấy thông tin người dùng từ localStorage
-        const userData = localStorage.getItem("user");
-        const user = userData ? JSON.parse(userData) : null;
-        
         // Kiểm tra và lấy thông tin người dùng
-        if (user?.user_id) {
-          const userInfoResult = await getCurrentUser(user.user_id);
+        if (userId) {
+          const userInfoResult = await getCurrentUser(userId);
           
           // Kiểm tra lấy thông tin người dùng thành công
           if (!userInfoResult.success) {
@@ -114,7 +115,7 @@ const useAnalyze = () => {
           }
   
           // Trừ credits
-          const creditsResult = await subtractUserCredits(user.user_id, wordCount);
+          const creditsResult = await subtractUserCredits(userId, wordCount);
           
           // Kiểm tra trừ credits thành công
           if (!creditsResult.success) {
@@ -131,7 +132,7 @@ const useAnalyze = () => {
           
           // ✅ THÊM: Lưu lịch sử giao dịch sau khi trừ credits thành công
           const historyResult = await saveCreditHistory(
-            user.user_id,
+            userId,
             wordCount,
             "subtract", 
             "analysis" // Chỉ rõ là dùng cho tính năng phân tích

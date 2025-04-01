@@ -8,6 +8,7 @@ import { getConfig, getCurrentUser } from '../api/apis';
 import { useSelector } from 'react-redux';
 import { FaLanguage, FaChartBar } from "react-icons/fa";
 import { MdImage, MdInsertDriveFile, MdWeb } from "react-icons/md";
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
@@ -20,8 +21,8 @@ const Header = ({ onLogout }) => {
 
   const [logo, setLogo] = useState('');
 
-  // Lấy user_id từ localStorage
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  // Lấy user_id từ cookie
+  const storedUser = getCookie(COOKIE_KEYS.USER) || {};
   const userId = storedUser.user_id;
 
   const { actionFlag } = useSelector((state) => state.action);
@@ -42,7 +43,7 @@ const Header = ({ onLogout }) => {
           setLoading(false);
         }
       } else {
-        console.error("Không tìm thấy user_id trong localStorage");
+        console.error("Không tìm thấy user_id trong cookie");
         setLoading(false);
       }
     };

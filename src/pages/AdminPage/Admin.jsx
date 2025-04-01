@@ -18,6 +18,7 @@ import CreditHistory from './CreditHistory';
 import RevenueHistory from './RevenueHistory';
 import Settings from './Settings';  // Import component Settings mới
 import './Admin.css';
+import { getCookie, COOKIE_KEYS } from '../../settings/cookies';
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Title, Text } = Typography;
@@ -29,8 +30,8 @@ const Admin = ({ onLogout }) => {
   const [collapsed, setCollapsed] = useState(false);
   const { token } = theme.useToken();
   
-  // Lấy thông tin user từ localStorage
-  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+  // Lấy thông tin user từ cookies
+  const userInfo = getCookie(COOKIE_KEYS.USER) || {};
   
   // Xử lý đăng xuất
   const handleLogout = () => {

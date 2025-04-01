@@ -27,6 +27,7 @@ import {
 } from '@ant-design/icons';
 import { createPayment, checkPaymentStatus, saveCreditHistory, addUserCredits } from "../api/apis";
 import './PaymentPage.css';
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
@@ -55,7 +56,7 @@ const Payment = () => {
 
   useEffect(() => {
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
+      const user = getCookie(COOKIE_KEYS.USER);
       if (user) {
         setUserData(user);
       } else {

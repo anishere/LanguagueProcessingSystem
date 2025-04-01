@@ -21,6 +21,7 @@ import PaymentSuccessRedirect from './pages/PaymentSuccessRedirect';
 import PaymentFailRedirect from './pages/PaymentFailRedirect';
 import store from './redux/store'
 import { Provider } from "react-redux";
+import { setCookie, getCookie, clearAuthCookies, COOKIE_KEYS } from './settings/cookies';
 
 //import { TranslationHistoryProvider } from "./contexts/TranslationHistoryContext";
 
@@ -29,12 +30,12 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Kiểm tra trạng thái đăng nhập từ localStorage khi khởi động
+  // Kiểm tra trạng thái đăng nhập từ cookies khi khởi động
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    const accountType = localStorage.getItem("account_type");
+    const isLoggedInCookie = getCookie(COOKIE_KEYS.IS_LOGGED_IN);
+    const accountType = getCookie(COOKIE_KEYS.ACCOUNT_TYPE);
     
-    if (isLoggedIn) {
+    if (isLoggedInCookie) {
       setIsLoggedIn(true);
       // Kiểm tra nếu là tài khoản admin
       if (accountType === "1") {
@@ -68,9 +69,9 @@ function App() {
         }
 
         // Tài khoản đang hoạt động - xử lý đăng nhập thành công
-        localStorage.setItem("user", JSON.stringify(result.data.user || {}));
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("account_type", result.data.user.account_type);
+        setCookie(COOKIE_KEYS.USER, result.data.user || {});
+        setCookie(COOKIE_KEYS.IS_LOGGED_IN, "true");
+        setCookie(COOKIE_KEYS.ACCOUNT_TYPE, result.data.user.account_type);
         
         // Cập nhật trạng thái đăng nhập và quyền admin
         setIsLoggedIn(true);
@@ -117,11 +118,8 @@ function App() {
 
   // Hàm đăng xuất
   const handleLogout = () => {
-    // Xóa token và thông tin người dùng
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("account_type");
+    // Xóa cookies
+    clearAuthCookies();
     
     // Cập nhật trạng thái đăng nhập và quyền admin
     setIsLoggedIn(false);

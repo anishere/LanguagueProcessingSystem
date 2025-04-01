@@ -28,7 +28,7 @@ import {
 } from '../api/apis';
 
 // Import cookie utils
-import { getCookie, clearAuthCookies, COOKIE_KEYS } from '../settings/cookies';
+import { getSecureCookie, clearAuthCookies, COOKIE_KEYS } from '../settings/secureCookies';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -61,7 +61,7 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       try {
         // Lấy user_id từ cookie
-        const userCookie = getCookie(COOKIE_KEYS.USER);
+        const userCookie = getSecureCookie(COOKIE_KEYS.USER);
         
         if (userCookie && userCookie.user_id) {
           const userId = userCookie.user_id;
@@ -510,337 +510,342 @@ const ProfilePage = () => {
                   key="2"
                 >
                   <Card className="content-card">
-                    <div className="card-header">
-                      <div className='w-100' style={{whiteSpace: "nowrap",display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h3 className="card-title">
-                          <HistoryOutlined /> Lịch Sử
-                        </h3>
-                        <div>
-                          <Space>
-                            <Button
-                              icon={<ReloadOutlined />}
-                              onClick={() => fetchCreditHistory()}
-                              loading={historyLoading}
-                              type="primary"
-                              ghost
-                              className='text-black p-1'
-                            >
-                              Làm mới
-                            </Button>
-                            <Text>
-                              <CreditCardOutlined /> Credits hiện tại: <span className="current-balance">{userData.credits.toLocaleString()}</span>
-                            </Text>
-                          </Space>
-                        </div>
+                    <div className='w-100' style={{whiteSpace: "nowrap",display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <h3 className="card-title">
+                        <HistoryOutlined /> Lịch Sử
+                      </h3>
+                      <div>
+                        <Space>
+                          <Button
+                            icon={<ReloadOutlined />}
+                            onClick={() => fetchCreditHistory()}
+                            loading={historyLoading}
+                            type="primary"
+                            ghost
+                            className='text-black p-1'
+                          >
+                            Làm mới
+                          </Button>
+                          <Text>
+                            <CreditCardOutlined /> Credits hiện tại: <span className="current-balance">{userData.credits.toLocaleString()}</span>
+                          </Text>
+                        </Space>
                       </div>
                     </div>
-                    <Divider className="section-divider" />
-                    
-                    {historyLoading ? (
-                      <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                        <Spin size="large" />
-                        <div style={{ marginTop: '16px' }}>Đang tải dữ liệu...</div>
-                      </div>
-                    ) : creditHistory && creditHistory.length > 0 ? (
-                      <Table 
-                        dataSource={creditHistory}
-                        columns={[
-                          {
-                            title: 'ID',
-                            dataIndex: 'id',
-                            key: 'id',
-                            width: 80,
-                          },
-                          {
-                            title: 'Số lượng',
-                            dataIndex: 'amount',
-                            key: 'amount',
-                            render: (amount, record) => {
-                              const isPositive = record.transaction_type === 'purchase';
-                              return (
-                                <span style={{ color: isPositive ? '#52c41a' : '#f5222d', fontWeight: 'bold' }}>
-                                  {isPositive ? '+' : '-'}{amount.toLocaleString()}
-                                </span>
-                              );
-                            },
-                            sorter: (a, b) => a.amount - b.amount,
-                          },
-                          {
-                            title: 'Loại giao dịch',
-                            dataIndex: 'transaction_type',
-                            key: 'transaction_type',
-                            render: (type) => {
-                              let color = 'blue';
-                              let text = type;
-
-                              if (type === 'purchase') {
-                                color = 'green';
-                                text = 'Nạp tiền';
-                              } else if (type === 'subtract') {
-                                color = 'red';
-                                text = 'Trừ tiền';
-                              } else if (type === 'usage') {
-                                color = 'orange';
-                                text = 'Sử dụng dịch vụ';
-                              }
-
-                              return <Tag color={color}>{text}</Tag>;
-                            },
-                          },
-                          {
-                            title: 'Phương thức',
-                            dataIndex: 'payment_method',
-                            key: 'payment_method',
-                            render: (method) => {
-                              // Kiểm tra xem phương thức có chứa thông tin admin không
-                              if (method && method.startsWith('admin:')) {
-                                const adminName = method.split(':')[1];
-                                return <Tag color="purple">Admin: {adminName}</Tag>;
-                              }
-                              
-                              // Xử lý các phương thức khác
-                              let color = 'default';
-                              let text = method;
-                              
-                              switch (method) {
-                                case 'admin':
-                                  color = 'purple';
-                                  text = 'Admin';
-                                  break;
-                                case 'bank_transfer':
-                                  color = 'blue';
-                                  text = 'Chuyển khoản';
-                                  break;
-                                case 'credit_card':
-                                  color = 'gold';
-                                  text = 'Thẻ tín dụng';
-                                  break;
-                                case 'e_wallet':
-                                  color = 'cyan';
-                                  text = 'Ví điện tử';
-                                  break;
-                                case 'promotional':
-                                  color = 'magenta';
-                                  text = 'Khuyến mãi';
-                                  break;
-                                case 'translate':
-                                  color = 'geekblue';
-                                  text = 'Translate';
-                                  break;
-                                case 'analysis':
-                                  color = 'orange';
-                                  text = 'Analyze';
-                                  break;
-                                case 'text-to-speech':
-                                  color = 'volcano';
-                                  text = 'Text to Speech';
-                                  break;
-                                case 'speech-to-text':
-                                  color = 'lime';
-                                  text = 'Speech to Text';
-                                  break;
-                              }
-                              
-                              return <Tag color={color}>{text}</Tag>;
-                            },
-                          },
-                          {
-                            title: 'Thời gian',
-                            dataIndex: 'created_at',
-                            key: 'created_at',
-                            render: (text) => formatDate(text),
-                            sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
-                            defaultSortOrder: 'descend',
-                          },
-                        ]}
-                        rowKey="id"
-                        pagination={{ 
-                          ...historyPagination,
-                          showSizeChanger: true,
-                          showTotal: (total) => `Tổng cộng ${total} giao dịch`,
-                          pageSizeOptions: ['5', '10', '20', '50']
-                        }}
-                        onChange={handleHistoryTableChange}
-                        className="transaction-table"
-                        scroll={{ x: 800 }}
-                      />
-                    ) : (
-                      <Result
-                        icon={<HistoryOutlined style={{ color: '#1890ff' }} />}
-                        title="Chưa Có Giao Dịch Nào"
-                        subTitle="Các giao dịch credit của bạn sẽ xuất hiện tại đây."
-                      />
-                    )}
                   </Card>
+                  <Divider className="section-divider" />
+                  
+                  {historyLoading ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                      <Spin size="large" />
+                      <div style={{ marginTop: '16px' }}>Đang tải dữ liệu...</div>
+                    </div>
+                  ) : creditHistory && creditHistory.length > 0 ? (
+                    <Table 
+                      dataSource={creditHistory}
+                      columns={[
+                        {
+                          title: 'ID',
+                          dataIndex: 'id',
+                          key: 'id',
+                          width: 80,
+                        },
+                        {
+                          title: 'Số lượng',
+                          dataIndex: 'amount',
+                          key: 'amount',
+                          render: (amount, record) => {
+                            const isPositive = record.transaction_type === 'purchase';
+                            return (
+                              <span style={{ color: isPositive ? '#52c41a' : '#f5222d', fontWeight: 'bold' }}>
+                                {isPositive ? '+' : '-'}{amount.toLocaleString()}
+                              </span>
+                            );
+                          },
+                          sorter: (a, b) => a.amount - b.amount,
+                        },
+                        {
+                          title: 'Loại giao dịch',
+                          dataIndex: 'transaction_type',
+                          key: 'transaction_type',
+                          render: (type) => {
+                            let color = 'blue';
+                            let text = type;
+
+                            if (type === 'purchase') {
+                              color = 'green';
+                              text = 'Nạp tiền';
+                            } else if (type === 'subtract') {
+                              color = 'red';
+                              text = 'Trừ tiền';
+                            } else if (type === 'usage') {
+                              color = 'orange';
+                              text = 'Sử dụng dịch vụ';
+                            }
+
+                            return <Tag color={color}>{text}</Tag>;
+                          },
+                        },
+                        {
+                          title: 'Phương thức',
+                          dataIndex: 'payment_method',
+                          key: 'payment_method',
+                          render: (method) => {
+                            // Kiểm tra xem phương thức có chứa thông tin admin không
+                            if (method && method.startsWith('admin:')) {
+                              const adminName = method.split(':')[1];
+                              return <Tag color="purple">Admin: {adminName}</Tag>;
+                            }
+                            
+                            // Xử lý các phương thức khác
+                            let color = 'default';
+                            let text = method;
+                            
+                            switch (method) {
+                              case 'admin':
+                                color = 'purple';
+                                text = 'Admin';
+                                break;
+                              case 'bank_transfer':
+                                color = 'blue';
+                                text = 'Chuyển khoản';
+                                break;
+                              case 'credit_card':
+                                color = 'gold';
+                                text = 'Thẻ tín dụng';
+                                break;
+                              case 'e_wallet':
+                                color = 'cyan';
+                                text = 'Ví điện tử';
+                                break;
+                              case 'promotional':
+                                color = 'magenta';
+                                text = 'Khuyến mãi';
+                                break;
+                              case 'translate':
+                                color = 'geekblue';
+                                text = 'Translate';
+                                break;
+                              case 'analysis':
+                                color = 'orange';
+                                text = 'Analyze';
+                                break;
+                              case 'text-to-speech':
+                                color = 'volcano';
+                                text = 'Text to Speech';
+                                break;
+                              case 'speech-to-text':
+                                color = 'lime';
+                                text = 'Speech to Text';
+                                break;
+                            }
+                            
+                            return <Tag color={color}>{text}</Tag>;
+                          },
+                        },
+                        {
+                          title: 'Thời gian',
+                          dataIndex: 'created_at',
+                          key: 'created_at',
+                          render: (text) => formatDate(text),
+                          sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
+                          defaultSortOrder: 'descend',
+                        },
+                      ]}
+                      rowKey="id"
+                      pagination={{ 
+                        ...historyPagination,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Tổng cộng ${total} giao dịch`,
+                        pageSizeOptions: ['5', '10', '20', '50']
+                      }}
+                      onChange={handleHistoryTableChange}
+                      className="transaction-table"
+                      scroll={{ x: 800 }}
+                    />
+                  ) : (
+                    <Result
+                      icon={<HistoryOutlined style={{ color: '#1890ff' }} />}
+                      title="Chưa Có Giao Dịch Nào"
+                      subTitle="Các giao dịch credit của bạn sẽ xuất hiện tại đây."
+                    />
+                  )}
                 </TabPane>
                 
                 <TabPane 
                   tab={<span><SettingOutlined /> Quản Lý Tài Khoản</span>} 
                   key="3"
                 >
-                  <Card className="content-card">
-                    <div className="card-header">
-                      <h3 className="card-title">Đổi Mật Khẩu</h3>
-                    </div>
-                    <Divider className="section-divider" />
+                </Card>
+              </TabPane>
+              
+              <TabPane 
+                tab={<span><SettingOutlined /> Quản Lý Tài Khoản</span>} 
+                key="3"
+              >
+                <Card className="content-card">
+                  <div className="card-header">
+                    <h3 className="card-title">Đổi Mật Khẩu</h3>
+                  </div>
+                  <Divider className="section-divider" />
+                  
+                  <Form
+                    form={passwordForm}
+                    layout="vertical"
+                    onFinish={handleChangePassword}
+                    className="edit-form"
+                  >
+                    <Form.Item
+                      name="currentPassword"
+                      label="Mật Khẩu Hiện Tại"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' },
+                      ]}
+                    >
+                      <Input.Password 
+                        prefix={<LockOutlined />} 
+                        placeholder="Nhập mật khẩu hiện tại" 
+                      />
+                    </Form.Item>
+                    
+                    <Form.Item
+                      name="newPassword"
+                      label="Mật Khẩu Mới"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
+                        { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
+                      ]}
+                      hasFeedback
+                    >
+                      <Input.Password 
+                        prefix={<LockOutlined />} 
+                        placeholder="Nhập mật khẩu mới" 
+                      />
+                    </Form.Item>
+                    
+                    <Form.Item
+                      name="confirmPassword"
+                      label="Xác Nhận Mật Khẩu Mới"
+                      dependencies={['newPassword']}
+                      hasFeedback
+                      rules={[
+                        { required: true, message: 'Vui lòng xác nhận mật khẩu mới!' },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('newPassword') === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('Hai mật khẩu không khớp!'));
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input.Password 
+                        prefix={<LockOutlined />} 
+                        placeholder="Xác nhận mật khẩu mới" 
+                      />
+                    </Form.Item>
+                    
+                    <Form.Item>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        icon={<LockOutlined />}
+                        loading={isPasswordChanging}
+                      >
+                        Đổi Mật Khẩu
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Card>
+                
+                <Card className="content-card danger-zone" style={{ marginTop: '24px' }}>
+                  <div className="card-header">
+                    <h3 className="card-title text-danger">Khu Vực Nguy Hiểm</h3>
+                  </div>
+                  <Divider className="section-divider" />
+                  
+                  <Alert
+                    message="Cảnh báo"
+                    description="Việc xóa tài khoản sẽ không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn."
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: '16px' }}
+                  />
+                  
+                  <Button
+                    danger
+                    type="primary"
+                    icon={<DeleteOutlined />}
+                    onClick={() => setDeleteModalVisible(true)}
+                  >
+                    Xóa Tài Khoản
+                  </Button>
+                  
+                  <Modal
+                    title={
+                      <div style={{ display: 'flex', alignItems: 'center', color: '#ff4d4f' }}>
+                        <ExclamationCircleOutlined style={{ marginRight: '8px' }} />
+                        Xác Nhận Xóa Tài Khoản
+                      </div>
+                    }
+                    visible={deleteModalVisible}
+                    onCancel={() => {
+                      setDeleteModalVisible(false);
+                      deleteForm.resetFields();
+                    }}
+                    footer={null}
+                    destroyOnClose
+                  >
+                    <p>Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.</p>
+                    <p>Để xác nhận, vui lòng nhập mật khẩu của bạn:</p>
                     
                     <Form
-                      form={passwordForm}
+                      form={deleteForm}
                       layout="vertical"
-                      onFinish={handleChangePassword}
-                      className="edit-form"
+                      onFinish={handleDeleteAccount}
                     >
                       <Form.Item
-                        name="currentPassword"
-                        label="Mật Khẩu Hiện Tại"
+                        name="password"
                         rules={[
-                          { required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' },
+                          { required: true, message: 'Vui lòng nhập mật khẩu để xác nhận!' },
                         ]}
                       >
                         <Input.Password 
                           prefix={<LockOutlined />} 
-                          placeholder="Nhập mật khẩu hiện tại" 
+                          placeholder="Nhập mật khẩu của bạn" 
                         />
                       </Form.Item>
                       
-                      <Form.Item
-                        name="newPassword"
-                        label="Mật Khẩu Mới"
-                        rules={[
-                          { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
-                          { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
-                        ]}
-                        hasFeedback
-                      >
-                        <Input.Password 
-                          prefix={<LockOutlined />} 
-                          placeholder="Nhập mật khẩu mới" 
-                        />
-                      </Form.Item>
-                      
-                      <Form.Item
-                        name="confirmPassword"
-                        label="Xác Nhận Mật Khẩu Mới"
-                        dependencies={['newPassword']}
-                        hasFeedback
-                        rules={[
-                          { required: true, message: 'Vui lòng xác nhận mật khẩu mới!' },
-                          ({ getFieldValue }) => ({
-                            validator(_, value) {
-                              if (!value || getFieldValue('newPassword') === value) {
-                                return Promise.resolve();
-                              }
-                              return Promise.reject(new Error('Hai mật khẩu không khớp!'));
-                            },
-                          }),
-                        ]}
-                      >
-                        <Input.Password 
-                          prefix={<LockOutlined />} 
-                          placeholder="Xác nhận mật khẩu mới" 
-                        />
-                      </Form.Item>
-                      
-                      <Form.Item>
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          icon={<LockOutlined />}
-                          loading={isPasswordChanging}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <Button 
+                          onClick={() => {
+                            setDeleteModalVisible(false);
+                            deleteForm.resetFields();
+                          }}
                         >
-                          Đổi Mật Khẩu
+                          Hủy
                         </Button>
-                      </Form.Item>
-                    </Form>
-                  </Card>
-                  
-                  <Card className="content-card danger-zone" style={{ marginTop: '24px' }}>
-                    <div className="card-header">
-                      <h3 className="card-title text-danger">Khu Vực Nguy Hiểm</h3>
-                    </div>
-                    <Divider className="section-divider" />
-                    
-                    <Alert
-                      message="Cảnh báo"
-                      description="Việc xóa tài khoản sẽ không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn."
-                      type="warning"
-                      showIcon
-                      style={{ marginBottom: '16px' }}
-                    />
-                    
-                    <Button
-                      danger
-                      type="primary"
-                      icon={<DeleteOutlined />}
-                      onClick={() => setDeleteModalVisible(true)}
-                    >
-                      Xóa Tài Khoản
-                    </Button>
-                    
-                    <Modal
-                      title={
-                        <div style={{ display: 'flex', alignItems: 'center', color: '#ff4d4f' }}>
-                          <ExclamationCircleOutlined style={{ marginRight: '8px' }} />
-                          Xác Nhận Xóa Tài Khoản
-                        </div>
-                      }
-                      visible={deleteModalVisible}
-                      onCancel={() => {
-                        setDeleteModalVisible(false);
-                        deleteForm.resetFields();
-                      }}
-                      footer={null}
-                      destroyOnClose
-                    >
-                      <p>Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.</p>
-                      <p>Để xác nhận, vui lòng nhập mật khẩu của bạn:</p>
-                      
-                      <Form
-                        form={deleteForm}
-                        layout="vertical"
-                        onFinish={handleDeleteAccount}
-                      >
-                        <Form.Item
-                          name="password"
-                          rules={[
-                            { required: true, message: 'Vui lòng nhập mật khẩu để xác nhận!' },
-                          ]}
+                        <Button 
+                          danger 
+                          type="primary" 
+                          htmlType="submit"
+                          loading={isDeleting}
                         >
-                          <Input.Password 
-                            prefix={<LockOutlined />} 
-                            placeholder="Nhập mật khẩu của bạn" 
-                          />
-                        </Form.Item>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <Button 
-                            onClick={() => {
-                              setDeleteModalVisible(false);
-                              deleteForm.resetFields();
-                            }}
-                          >
-                            Hủy
-                          </Button>
-                          <Button 
-                            danger 
-                            type="primary" 
-                            htmlType="submit"
-                            loading={isDeleting}
-                          >
-                            Xóa Tài Khoản
-                          </Button>
-                        </div>
-                      </Form>
-                    </Modal>
-                  </Card>
-                </TabPane>
-              </Tabs>
-            </Col>
-          </Row>
-        </Content>
-      </Layout>
-    </ConfigProvider>
-  );
+                          Xóa Tài Khoản
+                        </Button>
+                      </div>
+                    </Form>
+                  </Modal>
+                </Card>
+              </TabPane>
+            </Tabs>
+          </Col>
+        </Row>
+      </Content>
+    </Layout>
+  </ConfigProvider>
+);
 };
 
 export default ProfilePage;

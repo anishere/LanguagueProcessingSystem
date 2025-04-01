@@ -8,6 +8,7 @@ import {
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux"; 
 import { toggleAction } from "../redux/actionSlice";
+import { getCookie, COOKIE_KEYS } from '../settings/cookies';
 
 const useSpeechToText = (setInputText) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -60,14 +61,14 @@ const useSpeechToText = (setInputText) => {
         console.log(`💰 Số credits cần thiết: ${creditsRequired}`);
         
         // ✅ THÊM LOGIC KIỂM TRA CREDITS
-        // Lấy thông tin người dùng từ localStorage
-        const userData = localStorage.getItem("user");
-        const user = userData ? JSON.parse(userData) : null;
+        // Lấy thông tin người dùng từ cookies
+        const userCookie = getCookie(COOKIE_KEYS.USER);
+        const userId = userCookie?.user_id;
         
-        if (user?.user_id) {
+        if (userId) {
           try {
             // Kiểm tra thông tin người dùng
-            const userInfoResult = await getCurrentUser(user.user_id);
+            const userInfoResult = await getCurrentUser(userId);
             
             // Kiểm tra lấy thông tin người dùng thành công
             if (!userInfoResult.success) {
@@ -95,7 +96,7 @@ const useSpeechToText = (setInputText) => {
             }
 
             // Trừ credits
-            const creditsResult = await subtractUserCredits(user.user_id, creditsRequired);
+            const creditsResult = await subtractUserCredits(userId, creditsRequired);
             
             // Kiểm tra trừ credits thành công
             if (!creditsResult.success) {
@@ -113,7 +114,7 @@ const useSpeechToText = (setInputText) => {
             // ✅ THÊM: Lưu lịch sử giao dịch credits sau khi trừ credits thành công
             try {
               const historyResult = await saveCreditHistory(
-                user.user_id,
+                userId,
                 creditsRequired,
                 "subtract",
                 "speech-to-text" // Chỉ rõ là dùng cho tính năng speech-to-text
