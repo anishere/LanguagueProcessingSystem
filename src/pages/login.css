@@ -491,3 +491,38 @@
     padding-right: 15px;
   }
 }
+
+/* CSS cho nút toggle hiển thị/ẩn mật khẩu */
+.wrap-input100 {
+  position: relative;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 15px;
+  top: 66%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  z-index: 2;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.password-toggle-btn:hover {
+  color: #666;
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+}
+
+.password-toggle-btn svg {
+  stroke: currentColor;
+  transition: all 0.2s ease;
+}

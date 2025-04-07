@@ -916,3 +916,62 @@ export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'des
     };
   }
 };
+
+export const translateDocxFile = async (file, targetLanguage, model = "gpt-4o-mini", temperature = 0.1, workers = 8) => {
+  try {
+    // Map frontend language names to API expected values
+    const languageMapping = {
+      "english": "en",
+      "vietnamese": "vi",
+      "chinese": "zh",
+      "japanese": "ja",
+      "korean": "ko",
+      "french": "fr",
+      "german": "de",
+      "italian": "it",
+      "spanish": "es",
+      "russian": "ru"
+    };
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('target_language', languageMapping[targetLanguage] || targetLanguage);
+    formData.append('model', model);
+    formData.append('temperature', temperature);
+    formData.append('workers', workers);
+
+    const response = await axiosInstance.post(
+      "/document/translate-docx",
+      formData,
+      {
+        headers: {
+          "API-Key": APIKey,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error during document translation:", error);
+    throw error;
+  }
+};
+
+export const checkDocumentTranslationStatus = async (translationId) => {
+  try {
+    const response = await axiosInstance.get(
+      `/document/status/${translationId}`,
+      {
+        headers: {
+          "API-Key": APIKey,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error checking document translation status:", error);
+    throw error;
+  }
+};

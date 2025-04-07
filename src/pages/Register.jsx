@@ -12,7 +12,21 @@ function Register({ onRegister }) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    // Thêm state để theo dõi trạng thái hiển thị của mật khẩu
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
     const navigate = useNavigate();
+
+    // Thêm hàm toggle cho mật khẩu chính
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    // Thêm hàm toggle cho mật khẩu xác nhận
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,8 +51,15 @@ function Register({ onRegister }) {
         }
         
         // Kiểm tra độ dài mật khẩu
-        if (password.length < 6) {
-            setError('Mật khẩu phải có ít nhất 6 ký tự');
+        if (password.length < 8) {
+            setError('Mật khẩu phải có ít nhất 8 ký tự');
+            return;
+        }
+
+        // Kiểm tra mật khẩu có bao gồm số, chữ thường, chữ hoa và ký tự đặc biệt không
+        const regex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+        if (!regex.test(password)) {
+            setError('Mật khẩu phải bao gồm số, chữ hoa, chữ thường và ký tự đặc biệt');
             return;
         }
 
@@ -105,32 +126,76 @@ function Register({ onRegister }) {
                             <span className="focus-input100" data-symbol="&#x2709;"></span>
                         </div>
 
-                        {/* Password field */}
+                        {/* Password field - Thêm chức năng ẩn/hiện mật khẩu */}
                         <div className="wrap-input100 validate-input m-b-23" data-validate="Password is required">
                             <span className="label-input100">Password</span>
                             <input 
                                 className={`input100 ${password ? 'has-val' : ''}`} 
-                                type="password" 
+                                type={showPassword ? "text" : "password"} 
                                 name="password" 
                                 placeholder="Type your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                             <span className="focus-input100" data-symbol="&#xf190;"></span>
+                            
+                            {/* Nút toggle hiển thị/ẩn mật khẩu với biểu tượng con mắt */}
+                            <button 
+                                type="button"
+                                className="password-toggle-btn"
+                                onClick={togglePasswordVisibility}
+                                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                            >
+                                {showPassword ? (
+                                    // Biểu tượng mắt nhắm (đang hiển thị mật khẩu, nhấn để ẩn)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                        <line x1="1" y1="1" x2="23" y2="23" />
+                                    </svg>
+                                ) : (
+                                    // Biểu tượng mắt mở (đang ẩn mật khẩu, nhấn để hiển thị)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                )}
+                            </button>
                         </div>
 
-                        {/* Confirm Password field */}
+                        {/* Confirm Password field - Thêm chức năng ẩn/hiện mật khẩu */}
                         <div className="wrap-input100 validate-input m-b-23" data-validate="Confirm password is required">
                             <span className="label-input100">Confirm Password</span>
                             <input 
                                 className={`input100 ${confirmPassword ? 'has-val' : ''}`} 
-                                type="password" 
+                                type={showConfirmPassword ? "text" : "password"} 
                                 name="confirmPassword" 
                                 placeholder="Confirm your password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
                             <span className="focus-input100" data-symbol="&#xf190;"></span>
+                            
+                            {/* Nút toggle hiển thị/ẩn mật khẩu xác nhận với biểu tượng con mắt */}
+                            <button 
+                                type="button"
+                                className="password-toggle-btn"
+                                onClick={toggleConfirmPasswordVisibility}
+                                aria-label={showConfirmPassword ? "Ẩn mật khẩu xác nhận" : "Hiện mật khẩu xác nhận"}
+                            >
+                                {showConfirmPassword ? (
+                                    // Biểu tượng mắt nhắm (đang hiển thị mật khẩu, nhấn để ẩn)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                        <line x1="1" y1="1" x2="23" y2="23" />
+                                    </svg>
+                                ) : (
+                                    // Biểu tượng mắt mở (đang ẩn mật khẩu, nhấn để hiển thị)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                )}
+                            </button>
                         </div>
                         
                         <div className="container-login100-form-btn" style={{ marginTop: '30px' }}>
