@@ -288,26 +288,9 @@ const FilePage = () => {
                 </Text>
                 <div className="mt-2 settings-selector">
                   <LanguageSelector 
-                    targetLang={targetLanguage === "english" ? "en" : 
-                                targetLanguage === "vietnamese" ? "vi" :
-                                targetLanguage === "chinese" ? "zh" :
-                                targetLanguage === "japanese" ? "ja" :
-                                targetLanguage === "french" ? "fr" :
-                                targetLanguage === "german" ? "de" : "en"}
+                    targetLang={targetLanguage}
                     setTargetLang={(code) => {
-                      const langMap = {
-                        "en": "english",
-                        "vi": "vietnamese",
-                        "zh": "chinese",
-                        "ja": "japanese",
-                        "fr": "french",
-                        "de": "german",
-                        "it": "italian",
-                        "es": "spanish",
-                        "ru": "russian",
-                        "ko": "korean"
-                      };
-                      setTargetLanguage(langMap[code] || "english");
+                      setTargetLanguage(code);
                     }}
                     setTargetLangFull={setTargetLangFull}
                   />

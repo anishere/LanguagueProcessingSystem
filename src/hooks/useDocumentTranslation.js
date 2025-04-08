@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 
 const useDocumentTranslation = () => {
   const [file, setFile] = useState(null);
-  const [targetLanguage, setTargetLanguage] = useState('english');
+  const [targetLanguage, setTargetLanguage] = useState('en');
   const [style, setStyle] = useState('General');
   const [model, setModel] = useState('gpt-4o-mini');
   const [temperature, setTemperature] = useState(0.3);

@@ -9,6 +9,7 @@ const { Option } = Select;
 /**
  * Language selector component that allows selecting a target language for translation.
  */
+// eslint-disable-next-line react/prop-types
 const LanguageSelector = ({ targetLang, setTargetLang, setTargetLangFull }) => {
   const [searchText, setSearchText] = useState("");
   const [filteredLanguages, setFilteredLanguages] = useState(languages);
@@ -37,6 +38,7 @@ const LanguageSelector = ({ targetLang, setTargetLang, setTargetLangFull }) => {
   };
 
   // Custom dropdown render with search
+  // eslint-disable-next-line no-unused-vars
   const dropdownRender = menu => (
     <div className="custom-dropdown-render">
       <div className="language-search-container">

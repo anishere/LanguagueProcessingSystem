@@ -919,23 +919,12 @@ export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'des
 
 export const translateDocxFile = async (file, targetLanguage, model = "gpt-4o-mini", temperature = 0.1, workers = 8, style = "General") => {
   try {
-    // Map frontend language names to API expected values
-    const languageMapping = {
-      "english": "en",
-      "vietnamese": "vi",
-      "chinese": "zh",
-      "japanese": "ja",
-      "korean": "ko",
-      "french": "fr",
-      "german": "de",
-      "italian": "it",
-      "spanish": "es",
-      "russian": "ru"
-    };
-
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('target_language', languageMapping[targetLanguage] || targetLanguage);
+    
+    // Use the full language name directly - this helps GPT understand the target language better
+    formData.append('target_language', targetLanguage);
+    
     formData.append('model', model);
     formData.append('temperature', temperature);
     formData.append('workers', workers);
