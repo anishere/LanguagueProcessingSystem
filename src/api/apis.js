@@ -1,4 +1,5 @@
 import axiosInstance from "../settings/axios";
+import languages from "../settings/languagesCode";
 
 const APIKey = import.meta.env.VITE_API_CODE;
 
@@ -919,11 +920,18 @@ export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'des
 
 export const translateDocxFile = async (file, targetLanguage, model = "gpt-4o-mini", temperature = 0.1, workers = 8, style = "General") => {
   try {
+    // Ánh xạ mã ngôn ngữ sang tên đầy đủ
+    const getFullLanguageName = (code) => {
+      const langObj = languages.find(lang => lang.code === code);
+      return langObj ? langObj.name : code;
+    };
+
     const formData = new FormData();
     formData.append('file', file);
     
-    // Use the full language name directly - this helps GPT understand the target language better
-    formData.append('target_language', targetLanguage);
+    // Truyền tên đầy đủ của ngôn ngữ để GPT hiểu tốt hơn
+    const fullLanguageName = getFullLanguageName(targetLanguage);
+    formData.append('target_language', fullLanguageName);
     
     formData.append('model', model);
     formData.append('temperature', temperature);
