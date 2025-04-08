@@ -4,6 +4,7 @@ import useDocumentTranslation from '../hooks/useDocumentTranslation';
 import { FaDownload, FaFileWord } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import LanguageSelector from '../components/LanguageSelector';
+import StyleSelector from '../components/StyleSelector';
 import './FilePage.css';
 import { 
   Card, 
@@ -41,6 +42,7 @@ const FilePage = () => {
   const {
     file,
     targetLanguage,
+    style,
     model,
     isLoading,
     progress,
@@ -48,6 +50,7 @@ const FilePage = () => {
     error,
     handleFileChange,
     setTargetLanguage,
+    setStyle,
     setModel,
     translate,
     resetTranslation
@@ -307,6 +310,19 @@ const FilePage = () => {
                       setTargetLanguage(langMap[code] || "english");
                     }}
                     setTargetLangFull={setTargetLangFull}
+                  />
+                </div>
+              </div>
+
+              {/* Style Selector */}
+              <div className="mb-4">
+                <Text strong className="settings-header">
+                  Translation Style
+                </Text>
+                <div className="mt-2 settings-selector">
+                  <StyleSelector 
+                    style={style}
+                    setStyle={setStyle}
                   />
                 </div>
               </div>

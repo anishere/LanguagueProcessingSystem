@@ -917,7 +917,7 @@ export const getAllCreditHistory = async (skip = 0, limit = 10, sortOrder = 'des
   }
 };
 
-export const translateDocxFile = async (file, targetLanguage, model = "gpt-4o-mini", temperature = 0.1, workers = 8) => {
+export const translateDocxFile = async (file, targetLanguage, model = "gpt-4o-mini", temperature = 0.1, workers = 8, style = "General") => {
   try {
     // Map frontend language names to API expected values
     const languageMapping = {
@@ -939,6 +939,7 @@ export const translateDocxFile = async (file, targetLanguage, model = "gpt-4o-mi
     formData.append('model', model);
     formData.append('temperature', temperature);
     formData.append('workers', workers);
+    formData.append('style', style);
 
     const response = await axiosInstance.post(
       "/document/translate-docx",
